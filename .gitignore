@@ -1,10 +1,7 @@
-# Node
-node_modules/
-dist/
-
-# Rust / Tauri
-src-tauri/target/
-src-tauri/Cargo.lock
+# Rust / Tauri / Dioxus（ワークスペース共通のビルド出力）
+/target/
+/dist/
+/gen/schemas
 
 # エディタ・OS
 .DS_Store
