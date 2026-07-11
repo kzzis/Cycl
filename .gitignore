@@ -1,12 +1,4 @@
-# Rust / Tauri / Dioxus（ワークスペース共通のビルド出力）
-/target/
 /dist/
-/gen/schemas
-
-# エディタ・OS
+/target/
 .DS_Store
-.vscode/
-!.vscode/extensions.json
-
-# ローカル設定
-docs/
+/docs/
