@@ -1,3 +1,4 @@
+#![warn(clippy::all)]
 mod app;
 
 use app::App;
