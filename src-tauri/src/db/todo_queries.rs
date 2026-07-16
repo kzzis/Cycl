@@ -84,6 +84,7 @@ pub fn set_active(conn: &Connection, id: Option<i64>) -> AppResult<()> {
 }
 
 /// ポモドーロセッション完了時にタイマーエンジンから呼ばれる。
+#[allow(dead_code)] // Phase 3のタイマーエンジンから呼ばれるまでは未使用
 pub fn increment_pomodoro_count(conn: &Connection, id: i64) -> AppResult<Todo> {
     let affected = conn.execute(
         "UPDATE todo SET pomodoro_count = pomodoro_count + 1 WHERE id = ?1",

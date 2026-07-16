@@ -1,3 +1,6 @@
+// Phase 3のタイマーエンジンから呼ばれるまではTauriコマンドとして未公開・未使用
+#![allow(dead_code)]
+
 use crate::error::AppResult;
 use crate::models::session::PomodoroSession;
 use rusqlite::Connection;
