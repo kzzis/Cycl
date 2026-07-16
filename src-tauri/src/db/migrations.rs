@@ -37,4 +37,3 @@ pub fn run(conn: &Connection) -> Result<()> {
 
     Ok(())
 }
-
