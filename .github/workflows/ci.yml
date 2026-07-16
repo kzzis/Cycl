@@ -17,7 +17,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
-
+      - run: cargo test --workspace
   build:
     needs: [rust-lint]
     runs-on: macos-latest
