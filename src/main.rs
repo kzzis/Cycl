@@ -1,5 +1,9 @@
 #![warn(clippy::all)]
+
 mod app;
+mod components;
+mod hooks;
+mod tauri_api;
 
 use app::App;
 use dioxus::prelude::*;
@@ -9,3 +13,4 @@ fn main() {
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
     launch(App);
 }
+
