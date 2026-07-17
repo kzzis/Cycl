@@ -1,16 +1,28 @@
 use crate::error::{AppError, AppResult};
-use crate::models::todo::Todo;
 use rusqlite::Connection;
+use shared::Todo;
 
 const SELECT_COLUMNS: &str =
     "id, title, is_completed, pomodoro_count, target_count, is_active, created_at";
+
+fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
+    Ok(Todo {
+        id: row.get("id")?,
+        title: row.get("title")?,
+        is_completed: row.get::<_, i64>("is_completed")? != 0,
+        pomodoro_count: row.get("pomodoro_count")?,
+        target_count: row.get("target_count")?,
+        is_active: row.get::<_, i64>("is_active")? != 0,
+        created_at: row.get("created_at")?,
+    })
+}
 
 pub fn list(conn: &Connection) -> AppResult<Vec<Todo>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {SELECT_COLUMNS} FROM todo ORDER BY created_at ASC"
     ))?;
     let todos = stmt
-        .query_map([], Todo::from_row)?
+        .query_map([], todo_from_row)?
         .collect::<Result<Vec<_>, _>>()?;
     Ok(todos)
 }
@@ -19,7 +31,7 @@ pub fn get(conn: &Connection, id: i64) -> AppResult<Todo> {
     conn.query_row(
         &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE id = ?1"),
         [id],
-        Todo::from_row,
+        todo_from_row,
     )
     .map_err(|e| match e {
         rusqlite::Error::QueryReturnedNoRows => AppError::TodoNotFound(id),
