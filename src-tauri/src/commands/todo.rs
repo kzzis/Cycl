@@ -1,6 +1,6 @@
 use crate::db::{todo_queries, AppState};
 use crate::error::AppResult;
-use crate::models::todo::Todo;
+use shared::Todo;
 use tauri::State;
 
 #[tauri::command]
