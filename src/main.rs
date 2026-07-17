@@ -13,4 +13,3 @@ fn main() {
     dioxus_logger::init(Level::INFO).expect("failed to init logger");
     launch(App);
 }
-

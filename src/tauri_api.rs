@@ -56,11 +56,30 @@ pub mod todo {
     }
 
     pub async fn create_todo(title: &str, target_count: Option<i64>) -> Result<Todo, String> {
-        invoke("todo_create", &CreateArgs { title, target_count }).await
+        invoke(
+            "todo_create",
+            &CreateArgs {
+                title,
+                target_count,
+            },
+        )
+        .await
     }
 
-    pub async fn update_todo(id: i64, title: &str, target_count: Option<i64>) -> Result<Todo, String> {
-        invoke("todo_update", &UpdateArgs { id, title, target_count }).await
+    pub async fn update_todo(
+        id: i64,
+        title: &str,
+        target_count: Option<i64>,
+    ) -> Result<Todo, String> {
+        invoke(
+            "todo_update",
+            &UpdateArgs {
+                id,
+                title,
+                target_count,
+            },
+        )
+        .await
     }
 
     pub async fn delete_todo(id: i64) -> Result<(), String> {
