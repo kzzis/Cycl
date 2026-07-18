@@ -61,3 +61,48 @@
 .muted {
   color: var(--muted-foreground);
 }
+
+.pomodoro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.pomodoro__phase {
+  color: var(--muted-foreground);
+  font-size: 1.1rem;
+}
+
+.pomodoro__ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pomodoro__svg {
+  transform: rotate(-90deg);
+}
+
+.pomodoro__track {
+  color: var(--border);
+}
+
+.pomodoro__progress {
+  color: var(--primary);
+  transition: stroke-dashoffset 1s linear;
+}
+
+.pomodoro__remaining {
+  position: absolute;
+  font-size: 1.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pomodoro__controls {
+  display: flex;
+  gap: 0.5rem;
+}

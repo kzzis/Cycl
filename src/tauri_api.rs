@@ -1,5 +1,7 @@
 use serde::{de::DeserializeOwned, Serialize};
+use wasm_bindgen::closure::Closure;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 
 #[wasm_bindgen]
 extern "C" {
@@ -7,6 +9,12 @@ extern "C" {
     // 失敗時はJSの文字列がErrとして返ってくる。
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"], js_name = invoke, catch)]
     async fn invoke_raw(cmd: &str, args: JsValue) -> Result<JsValue, JsValue>;
+
+    #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "event"], js_name = listen, catch)]
+    async fn listen_raw(
+        event: &str,
+        handler: &Closure<dyn FnMut(JsValue)>,
+    ) -> Result<JsValue, JsValue>;
 }
 
 async fn invoke_inner<T: DeserializeOwned>(cmd: &str, args: JsValue) -> Result<T, String> {
@@ -23,6 +31,46 @@ pub async fn invoke0<T: DeserializeOwned>(cmd: &str) -> Result<T, String> {
 pub async fn invoke<A: Serialize, T: DeserializeOwned>(cmd: &str, args: &A) -> Result<T, String> {
     let args = serde_wasm_bindgen::to_value(args).map_err(|e| e.to_string())?;
     invoke_inner(cmd, args).await
+}
+
+/// `event_name` を購読し、届いたペイロードを`on_payload`に渡し続ける。
+/// アプリのライフタイム全体で購読し続ける前提のシングルトン用途向け。
+pub fn listen<T: DeserializeOwned + 'static>(
+    event_name: &'static str,
+    mut on_payload: impl FnMut(T) + 'static,
+) {
+    let closure = Closure::wrap(Box::new(move |event: JsValue| {
+        let payload = js_sys::Reflect::get(&event, &JsValue::from_str("payload")).unwrap();
+        if let Ok(value) = serde_wasm_bindgen::from_value::<T>(payload) {
+            on_payload(value);
+        }
+    }) as Box<dyn FnMut(JsValue)>);
+
+    spawn_local(async move {
+        let _ = listen_raw(event_name, &closure).await;
+        closure.forget();
+    });
+}
+
+pub mod timer {
+    use super::invoke0;
+    use shared::TimerState;
+
+    pub async fn get_timer_state() -> Result<TimerState, String> {
+        invoke0("timer_get_state").await
+    }
+
+    pub async fn start_timer() -> Result<TimerState, String> {
+        invoke0("timer_start").await
+    }
+
+    pub async fn pause_timer() -> Result<TimerState, String> {
+        invoke0("timer_pause").await
+    }
+
+    pub async fn reset_timer() -> Result<TimerState, String> {
+        invoke0("timer_reset").await
+    }
 }
 
 pub mod todo {

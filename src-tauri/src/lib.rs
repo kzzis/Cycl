@@ -4,10 +4,12 @@ mod commands;
 mod db;
 mod error;
 mod models;
+mod timer;
 
 use db::AppState;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
+use timer::engine::TimerEngine;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,6 +23,7 @@ pub fn run() {
             app.manage(AppState {
                 db: Arc::new(Mutex::new(conn)),
             });
+            app.manage(TimerEngine::new(app.handle().clone()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -30,6 +33,10 @@ pub fn run() {
             commands::todo::todo_delete,
             commands::todo::todo_toggle_complete,
             commands::todo::todo_set_active,
+            commands::timer::timer_get_state,
+            commands::timer::timer_start,
+            commands::timer::timer_pause,
+            commands::timer::timer_reset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
