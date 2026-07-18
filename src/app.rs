@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-use crate::components::TodoList;
+use crate::components::{PomodoroTimer, TodoList};
 
 static CSS: Asset = asset!("/assets/styles.css");
 
@@ -10,6 +10,7 @@ pub fn App() -> Element {
     rsx! {
         link { rel: "stylesheet", href: CSS }
         main { class: "app",
+            PomodoroTimer {}
             TodoList {}
         }
     }
