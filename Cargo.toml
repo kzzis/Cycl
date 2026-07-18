@@ -18,6 +18,12 @@ shared = { path = "shared"}
 [workspace]
 members = ["src-tauri", "shared"]
 
+[workspace.lints.rust]
+dead_code = "allow"
+
+[lints]
+workspace = true
+
 [profile]
 
 [profile.wasm-dev]
