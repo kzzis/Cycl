@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "com.cycl.app",
   "build": {
-    "beforeDevCommand": "sh -c \"lsof -ti:1420 | xargs kill -9 2>/dev/null; mise exec -- dx serve --port 1420\"",
-    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "sh -c \"pkill -9 -x dx 2>/dev/null; mise exec -- dx serve --port 1420 --interactive false\"",
+    "devUrl": "http://127.0.0.1:1420",
     "beforeBuildCommand": "mise exec -- dx bundle --release",
     "frontendDist": "../dist/public"
   },
