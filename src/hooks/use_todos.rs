@@ -10,7 +10,7 @@ pub struct UseTodos {
 }
 
 impl UseTodos {
-    fn refresh(&self) {
+    pub fn refresh(&self) {
         let mut items = self.items;
         spawn(async move {
             if let Ok(list) = api::list_todos().await {
@@ -70,6 +70,11 @@ pub fn use_todos() -> UseTodos {
                 items.set(list);
             }
             is_loading.set(false);
+        });
+
+        // Rust側でセッションが完了しTodoが更新されたら、一覧を取り直す。
+        crate::tauri_api::listen::<()>("todos:changed", move |_| {
+            hook.refresh();
         });
     });
 

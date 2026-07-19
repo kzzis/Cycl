@@ -29,3 +29,5 @@ shared = { path = "../shared" }
 rusqlite = {version = "=0.31.0", features = ["bundled"] }
 thiserror = "=1.0.69"
 tokio = { version = "1", features = ["time"] }
+chrono = { version = "0.4", features = ["clock"] }
+tauri-plugin-notification = "2"

@@ -40,6 +40,18 @@ fn get(conn: &Connection, id: i64) -> AppResult<PomodoroSession> {
     )?)
 }
 
+pub fn record_completed(
+    conn: &Connection,
+    todo_id: i64,
+    started_at: &str,
+) -> AppResult<PomodoroSession> {
+    conn.execute(
+        "INSERT INTO pomodoro_session (todo_id, started_at, completed) VALUES (?1, ?2, 1)",
+        (todo_id, started_at),
+    )?;
+    get(conn, conn.last_insert_rowid())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -75,5 +87,13 @@ mod tests {
 
         let sessions = list_by_todo(&conn, todo_a.id).unwrap();
         assert_eq!(sessions.len(), 2);
+    }
+
+    #[test]
+    fn record_completed_inserts_an_already_completed_session() {
+        let conn = setup_conn();
+        let todo = todo_queries::create(&conn, "作業", None).unwrap();
+        let session = record_completed(&conn, todo.id, "2026-07-04T10:00:00+09:00").unwrap();
+        assert!(session.completed);
     }
 }

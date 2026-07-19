@@ -95,8 +95,21 @@ pub fn set_active(conn: &Connection, id: Option<i64>) -> AppResult<()> {
     Ok(())
 }
 
+/// 「現在取り組むTodo」を取得する。存在しなければ`None`。
+pub fn get_active(conn: &Connection) -> AppResult<Option<Todo>> {
+    conn.query_row(
+        &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE is_active = 1"),
+        [],
+        todo_from_row,
+    )
+    .map(Some)
+    .or_else(|e| match e {
+        rusqlite::Error::QueryReturnedNoRows => Ok(None),
+        other => Err(AppError::Database(other)),
+    })
+}
+
 /// ポモドーロセッション完了時にタイマーエンジンから呼ばれる。
-#[allow(dead_code)] // Phase 3のタイマーエンジンから呼ばれるまでは未使用
 pub fn increment_pomodoro_count(conn: &Connection, id: i64) -> AppResult<Todo> {
     let affected = conn.execute(
         "UPDATE todo SET pomodoro_count = pomodoro_count + 1 WHERE id = ?1",
@@ -169,5 +182,18 @@ mod tests {
         let todo = create(&conn, "作業", None).unwrap();
         let updated = increment_pomodoro_count(&conn, todo.id).unwrap();
         assert_eq!(updated.pomodoro_count, 1);
+    }
+
+    #[test]
+    fn get_active_returns_the_active_todo() {
+        let conn = setup_conn();
+        let a = create(&conn, "A", None).unwrap();
+        let _b = create(&conn, "B", None).unwrap();
+
+        assert!(get_active(&conn).unwrap().is_none());
+
+        set_active(&conn, Some(a.id)).unwrap();
+        let active = get_active(&conn).unwrap().unwrap();
+        assert_eq!(active.id, a.id);
     }
 }
