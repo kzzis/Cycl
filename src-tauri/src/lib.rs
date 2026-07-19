@@ -15,15 +15,16 @@ use timer::engine::TimerEngine;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
         .setup(|app| {
             let app_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&app_dir)?;
             let db_path = app_dir.join("cycl.sqlite3");
             let conn = db::open(&db_path)?;
-            app.manage(AppState {
-                db: Arc::new(Mutex::new(conn)),
-            });
-            app.manage(TimerEngine::new(app.handle().clone()));
+            let db = Arc::new(Mutex::new(conn));
+
+            app.manage(AppState { db: db.clone() });
+            app.manage(TimerEngine::new(app.handle().clone(), db.clone()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
