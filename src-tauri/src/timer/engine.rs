@@ -1,7 +1,7 @@
 use crate::db::{session_queries, todo_queries};
 use chrono::Utc;
 use rusqlite::Connection;
-use shared::{TimerPhase, TimerSettings, TimerState};
+use shared::{format_mm_ss, TimerPhase, TimerSettings, TimerState};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter};
 use tauri_plugin_notification::NotificationExt;
@@ -84,6 +84,11 @@ fn spawn_tick_loop(
                     record_work_session(&app_handle, &db, &started_at);
                 }
             }
+
+            let title = snapshot
+                .is_running
+                .then(|| format_mm_ss(snapshot.remaining_secs));
+            crate::tray::update_title(&app_handle, title);
 
             let _ = app_handle.emit("timer:tick", &snapshot);
         }

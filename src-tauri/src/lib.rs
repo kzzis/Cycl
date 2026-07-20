@@ -5,6 +5,7 @@ mod db;
 mod error;
 mod models;
 mod timer;
+mod tray;
 
 use db::AppState;
 use std::sync::{Arc, Mutex};
@@ -25,6 +26,7 @@ pub fn run() {
 
             app.manage(AppState { db: db.clone() });
             app.manage(TimerEngine::new(app.handle().clone(), db.clone()));
+            tray::setup(app.handle())?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
