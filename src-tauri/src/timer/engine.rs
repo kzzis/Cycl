@@ -117,9 +117,9 @@ fn record_work_session(app_handle: &AppHandle, db: &Arc<Mutex<Connection>>, star
     let _ = app_handle
         .notification()
         .builder()
-        .title("ポモドーロ完了")
+        .title("Pomodoro Complete")
         .body(format!(
-            "「{}」を1セット完了しました 🍅×{}",
+            "\"{}\" finished a session 🍅×{}",
             updated.title, updated.pomodoro_count
         ))
         .show();

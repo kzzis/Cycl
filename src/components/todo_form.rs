@@ -25,19 +25,19 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
         form { class: "todo-form", onsubmit: submit,
             input {
                 value: "{title}",
-                placeholder: "新しいTodo",
-                aria_label: "Todoのタイトル",
+                placeholder: "New todo",
+                aria_label: "Todo title",
                 oninput: move |e| title.set(e.value()),
             }
             input {
                 value: "{target_count}",
                 r#type: "number",
                 min: "0",
-                placeholder: "目標🍅数",
-                aria_label: "目標ポモドーロ数",
+                placeholder: "Target 🍅",
+                aria_label: "Target pomodoro count",
                 oninput: move |e| target_count.set(e.value()),
             }
-            button { r#type: "submit", "追加" }
+            button { class: "btn btn--primary", r#type: "submit", "Add" }
         }
     }
 }

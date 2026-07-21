@@ -8,7 +8,7 @@ pub fn TodoList() -> Element {
     let todos = use_todos();
 
     if *todos.is_loading.read() {
-        return rsx! { p { class: "muted", "読み込み中..." } };
+        return rsx! { p { class: "muted", "Loading..." } };
     }
 
     rsx! {

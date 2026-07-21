@@ -5,14 +5,9 @@ use tauri::{
 };
 
 pub fn setup(app: &AppHandle) -> tauri::Result<()> {
-    let toggle_window = MenuItem::with_id(
-        app,
-        "toggle_window",
-        "ウィンドウを表示/非表示",
-        true,
-        None::<&str>,
-    )?;
-    let quit = MenuItem::with_id(app, "quit", "終了", true, None::<&str>)?;
+    let toggle_window =
+        MenuItem::with_id(app, "toggle_window", "Show/Hide Window", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&toggle_window, &quit])?;
 
     TrayIconBuilder::with_id("main")

@@ -1,78 +1,76 @@
-.app {
-  display: flex;
-  justify-content: center;
-  padding: 2rem;
-}
+:root {
+  font-family: "Inter", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color-scheme: dark;
 
-.todo-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 28rem;
-}
+  --font-display: "Space Grotesk", "Inter", -apple-system, sans-serif;
 
-.todo-form {
-  display: flex;
-  gap: 0.5rem;
-}
+  --background: #0a0a0e;
+  --surface: #16161f;
+  --surface-hover: #1d1d29;
+  --foreground: #f4f4f6;
+  --muted-foreground: #8b8b9a;
+  --border: #26262f;
+  --border-strong: #34343f;
+  --primary: #6366f1;
+  --primary-hover: #7678f4;
+  --primary-foreground: #ffffff;
+  --danger: #f87171;
 
-.todo-form input {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.4rem 0.6rem;
-  background: transparent;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.35);
+
   color: var(--foreground);
+  background-color: var(--background);
 }
 
-.todo-item {
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+.app {
+  height: 100vh;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
+  align-items: stretch;
+  background: var(--surface);
 }
 
-.todo-item--active {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
-}
-
-.todo-item__title {
-  flex: 1;
-  text-align: left;
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.todo-item__title--done {
-  color: var(--muted-foreground);
-  text-decoration: line-through;
-}
-
-.todo-item__count {
-  font-size: 0.85rem;
-  color: var(--muted-foreground);
-}
-
-.muted {
-  color: var(--muted-foreground);
-}
+/* --- Pomodoro timer --- */
 
 .pomodoro {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 2.5rem 2.25rem;
+  width: 20rem;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
 }
 
 .pomodoro__phase {
+  margin: 0;
+  padding: 0.3rem 0.9rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
   color: var(--muted-foreground);
-  font-size: 1.1rem;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .pomodoro__ring {
@@ -82,27 +80,231 @@
   justify-content: center;
 }
 
+.pomodoro__ring::before {
+  content: "";
+  position: absolute;
+  inset: 1.25rem;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.18;
+  filter: blur(28px);
+  z-index: 0;
+}
+
 .pomodoro__svg {
+  position: relative;
+  z-index: 1;
   transform: rotate(-90deg);
 }
 
 .pomodoro__track {
-  color: var(--border);
+  color: var(--border-strong);
 }
 
 .pomodoro__progress {
-  color: var(--primary);
   transition: stroke-dashoffset 1s linear;
 }
 
 .pomodoro__remaining {
   position: absolute;
-  font-size: 1.8rem;
-  font-weight: 600;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 .pomodoro__controls {
   display: flex;
+  gap: 0.6rem;
+}
+
+/* --- Buttons --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 0.55rem 1.3rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn--primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--border-strong);
+  color: var(--foreground);
+}
+
+.btn--ghost:hover {
+  background: var(--surface-hover);
+}
+
+/* --- Todo list --- */
+
+.todo-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  min-width: 0;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.todo-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.todo-form {
+  display: flex;
   gap: 0.5rem;
+}
+
+.todo-form input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  transition: border-color 0.15s ease;
+}
+
+.todo-form input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.todo-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.todo-form input:not([type="number"]) {
+  flex: 1;
+}
+
+.todo-form input[type="number"] {
+  width: 5.5rem;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.85rem;
+  background: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.todo-item:hover {
+  background: var(--surface-hover);
+}
+
+.todo-item--active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.todo-item input[type="checkbox"] {
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  background: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.todo-item input[type="checkbox"]::after {
+  content: "";
+  width: 0.6rem;
+  height: 0.35rem;
+  border-left: 2px solid var(--primary-foreground);
+  border-bottom: 2px solid var(--primary-foreground);
+  transform: rotate(-45deg) scale(0);
+  transition: transform 0.1s ease;
+}
+
+.todo-item input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.todo-item input[type="checkbox"]:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+.todo-item__title {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.todo-item__title--done {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+.todo-item__count {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.todo-item__delete {
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  border-radius: var(--radius-sm);
+  width: 1.75rem;
+  height: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.todo-item__delete:hover {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+
+.muted {
+  color: var(--muted-foreground);
 }
