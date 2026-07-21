@@ -9,7 +9,7 @@ const RADIUS: f64 = 90.0;
 pub fn PomodoroTimer() -> Element {
     let timer = use_timer();
     let Some(state) = timer.state.read().clone() else {
-        return rsx! { p { class: "muted", "読み込み中..." } };
+        return rsx! { p { class: "muted", "Loading..." } };
     };
 
     let circumference = 2.0 * std::f64::consts::PI * RADIUS;
@@ -54,11 +54,11 @@ pub fn PomodoroTimer() -> Element {
             }
             div { class: "pomodoro__controls",
                 if state.is_running {
-                    button { class: "btn btn--primary", onclick: move |_| timer.pause(), "一時停止" }
+                    button { class: "btn btn--primary", onclick: move |_| timer.pause(), "Pause" }
                 } else {
-                    button { class: "btn btn--primary", onclick: move |_| timer.start(), "開始" }
+                    button { class: "btn btn--primary", onclick: move |_| timer.start(), "Start" }
                 }
-                button { class: "btn btn--ghost", onclick: move |_| timer.reset(), "リセット" }
+                button { class: "btn btn--ghost", onclick: move |_| timer.reset(), "Reset" }
             }
         }
     }

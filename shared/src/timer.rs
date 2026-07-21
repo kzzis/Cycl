@@ -92,12 +92,12 @@ pub fn format_mm_ss(total_seconds: u32) -> String {
     format!("{:02}:{:02}", total_seconds / 60, total_seconds % 60)
 }
 
-/// フェーズの日本語ラベル(フロント表示専用)。
+/// フェーズの表示ラベル(フロント表示専用)。
 pub fn phase_label(phase: TimerPhase) -> &'static str {
     match phase {
-        TimerPhase::Work => "作業",
-        TimerPhase::ShortBreak => "短い休憩",
-        TimerPhase::LongBreak => "長い休憩",
+        TimerPhase::Work => "Work",
+        TimerPhase::ShortBreak => "Short Break",
+        TimerPhase::LongBreak => "Long Break",
     }
 }
 

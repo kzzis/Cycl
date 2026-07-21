@@ -20,7 +20,7 @@ pub fn TodoItem(
             input {
                 r#type: "checkbox",
                 checked: todo.is_completed,
-                aria_label: "{todo.title}を完了にする",
+                aria_label: "Mark {todo.title} as complete",
                 onchange: move |_| on_toggle_complete.call(id),
             }
             button {
@@ -31,7 +31,7 @@ pub fn TodoItem(
             span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
             button {
                 class: "todo-item__delete",
-                aria_label: "{todo.title}を削除",
+                aria_label: "Delete {todo.title}",
                 onclick: move |_| on_delete.call(id),
                 "✕"
             }
