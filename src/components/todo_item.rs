@@ -29,7 +29,12 @@ pub fn TodoItem(
                 "{todo.title}"
             }
             span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
-            button { class: "todo-item__delete", onclick: move |_| on_delete.call(id), "削除" }
+            button {
+                class: "todo-item__delete",
+                aria_label: "{todo.title}を削除",
+                onclick: move |_| on_delete.call(id),
+                "✕"
+            }
         }
     }
 }
