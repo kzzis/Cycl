@@ -37,7 +37,7 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 aria_label: "目標ポモドーロ数",
                 oninput: move |e| target_count.set(e.value()),
             }
-            button { r#type: "submit", "追加" }
+            button { class: "btn btn--primary", r#type: "submit", "追加" }
         }
     }
 }

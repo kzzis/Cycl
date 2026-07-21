@@ -28,6 +28,14 @@ pub fn PomodoroTimer() -> Element {
                 svg {
                     width: "220", height: "220", view_box: "0 0 220 220",
                     class: "pomodoro__svg",
+                    defs {
+                        linearGradient {
+                            id: "pomodoro-gradient",
+                            x1: "0%", y1: "0%", x2: "100%", y2: "100%",
+                            stop { offset: "0%", stop_color: "#818cf8" }
+                            stop { offset: "100%", stop_color: "#c084fc" }
+                        }
+                    }
                     circle {
                         cx: "110", cy: "110", r: "{RADIUS}",
                         fill: "none", stroke: "currentColor", stroke_width: "12",
@@ -35,7 +43,7 @@ pub fn PomodoroTimer() -> Element {
                     }
                     circle {
                         cx: "110", cy: "110", r: "{RADIUS}",
-                        fill: "none", stroke: "currentColor", stroke_width: "12",
+                        fill: "none", stroke: "url(#pomodoro-gradient)", stroke_width: "12",
                         stroke_linecap: "round",
                         stroke_dasharray: "{circumference}",
                         stroke_dashoffset: "{offset}",
@@ -46,11 +54,11 @@ pub fn PomodoroTimer() -> Element {
             }
             div { class: "pomodoro__controls",
                 if state.is_running {
-                    button { onclick: move |_| timer.pause(), "一時停止" }
+                    button { class: "btn btn--primary", onclick: move |_| timer.pause(), "一時停止" }
                 } else {
-                    button { onclick: move |_| timer.start(), "開始" }
+                    button { class: "btn btn--primary", onclick: move |_| timer.start(), "開始" }
                 }
-                button { onclick: move |_| timer.reset(), "リセット" }
+                button { class: "btn btn--ghost", onclick: move |_| timer.reset(), "リセット" }
             }
         }
     }
