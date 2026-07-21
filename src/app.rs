@@ -16,14 +16,8 @@ pub fn App() -> Element {
         }
         link { rel: "stylesheet", href: CSS }
         main { class: "app",
-            header { class: "app__header",
-                span { class: "app__logo", "🍅" }
-                h1 { class: "app__title", "Cycl" }
-            }
-            div { class: "app__panels",
-                PomodoroTimer {}
-                TodoList {}
-            }
+            PomodoroTimer {}
+            TodoList {}
         }
     }
 }

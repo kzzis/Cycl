@@ -33,58 +33,17 @@
   box-sizing: border-box;
 }
 
+html,
 body {
+  height: 100%;
   margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.16), transparent 55%),
-    var(--background);
 }
 
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2.5rem;
-  padding: 3rem 1.5rem 4rem;
-}
-
-.app__header {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.app__logo {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-.app__title {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.app__panels {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-/* --- Card panels --- */
-
-.pomodoro,
-.todo-list {
+  align-items: stretch;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
 }
 
 /* --- Pomodoro timer --- */
@@ -93,9 +52,12 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1.5rem;
   padding: 2.5rem 2.25rem;
   width: 20rem;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
 }
 
 .pomodoro__phase {
@@ -200,12 +162,13 @@ body {
 /* --- Todo list --- */
 
 .todo-list {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  width: 100%;
-  max-width: 26rem;
-  padding: 1.75rem;
+  min-width: 0;
+  padding: 2rem;
+  overflow-y: auto;
 }
 
 .todo-list ul {
