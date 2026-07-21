@@ -1,3 +1,44 @@
+:root {
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color-scheme: dark;
+
+  --background: #0a0a0e;
+  --surface: #16161f;
+  --surface-hover: #1d1d29;
+  --foreground: #f4f4f6;
+  --muted-foreground: #8b8b9a;
+  --border: #26262f;
+  --border-strong: #34343f;
+  --primary: #6366f1;
+  --primary-hover: #7678f4;
+  --primary-foreground: #ffffff;
+  --danger: #f87171;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  color: var(--foreground);
+  background-color: var(--background);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.16), transparent 55%),
+    var(--background);
+}
+
 .app {
   display: flex;
   justify-content: center;
