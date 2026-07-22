@@ -16,6 +16,7 @@ pub fn App() -> Element {
         }
         link { rel: "stylesheet", href: CSS }
         main { class: "app",
+            div { class: "app__drag-region", "data-tauri-drag-region": true }
             PomodoroTimer {}
             TodoList {}
         }
