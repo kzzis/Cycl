@@ -15,7 +15,7 @@ pub fn App() -> Element {
             href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap",
         }
         link { rel: "stylesheet", href: CSS }
-        main { class: "app",
+        main { class: "app", "data-tauri-drag-region": "deep",
             PomodoroTimer {}
             TodoList {}
         }
