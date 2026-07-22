@@ -40,20 +40,10 @@ body {
 }
 
 .app {
-  position: relative;
   height: 100vh;
   display: flex;
   align-items: stretch;
   background: var(--surface);
-}
-
-.app__drag-region {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2rem;
-  z-index: 10;
 }
 
 /* --- Pomodoro timer --- */
