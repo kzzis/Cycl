@@ -4,19 +4,40 @@ use shared::Todo;
 #[component]
 pub fn TodoItem(
     todo: Todo,
+    is_dragging: bool,
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
+    on_drag_start: EventHandler<i64>,
+    on_hover: EventHandler<i64>,
 ) -> Element {
     let target_label = todo
         .target_count
         .map(|target| format!(" / {target}"))
         .unwrap_or_default();
     let id = todo.id;
+    let mut class = if todo.is_active {
+        "todo-item todo-item--active".to_string()
+    } else {
+        "todo-item".to_string()
+    };
+    if is_dragging {
+        class.push_str(" todo-item--dragging");
+    }
 
     rsx! {
         li {
-            class: if todo.is_active { "todo-item todo-item--active" } else { "todo-item" },
+            class,
+            onmouseenter: move |_| on_hover.call(id),
+            span {
+                class: "todo-item__handle",
+                aria_label: "Drag to reorder {todo.title}",
+                onmousedown: move |e| {
+                    e.prevent_default();
+                    on_drag_start.call(id);
+                },
+                "⠿"
+            }
             input {
                 r#type: "checkbox",
                 checked: todo.is_completed,

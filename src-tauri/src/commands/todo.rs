@@ -47,3 +47,10 @@ pub fn todo_set_active(state: State<AppState>, id: Option<i64>) -> AppResult<()>
     let conn = state.db.lock().unwrap();
     todo_queries::set_active(&conn, id)
 }
+
+#[tauri::command]
+pub fn todo_reorder(state: State<AppState>, ordered_ids: Vec<i64>) -> AppResult<Vec<Todo>> {
+    let conn = state.db.lock().unwrap();
+    todo_queries::reorder(&conn, &ordered_ids)?;
+    todo_queries::list(&conn)
+}

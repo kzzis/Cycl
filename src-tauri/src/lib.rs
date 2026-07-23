@@ -36,6 +36,7 @@ pub fn run() {
             commands::todo::todo_delete,
             commands::todo::todo_toggle_complete,
             commands::todo::todo_set_active,
+            commands::todo::todo_reorder,
             commands::timer::timer_get_state,
             commands::timer::timer_start,
             commands::timer::timer_pause,
