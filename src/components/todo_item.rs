@@ -9,7 +9,7 @@ pub fn TodoItem(
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
     on_drag_start: EventHandler<i64>,
-    on_drop: EventHandler<i64>,
+    on_hover: EventHandler<i64>,
 ) -> Element {
     let target_label = todo
         .target_count
@@ -28,11 +28,14 @@ pub fn TodoItem(
     rsx! {
         li {
             class,
-            onmouseup: move |_| on_drop.call(id),
+            onmouseenter: move |_| on_hover.call(id),
             span {
                 class: "todo-item__handle",
                 aria_label: "Drag to reorder {todo.title}",
-                onmousedown: move |_| on_drag_start.call(id),
+                onmousedown: move |e| {
+                    e.prevent_default();
+                    on_drag_start.call(id);
+                },
                 "⠿"
             }
             input {
