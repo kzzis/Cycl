@@ -7,6 +7,8 @@ pub fn TodoItem(
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
+    on_drag_start: EventHandler<i64>,
+    on_drop: EventHandler<i64>,
 ) -> Element {
     let target_label = todo
         .target_count
@@ -17,6 +19,18 @@ pub fn TodoItem(
     rsx! {
         li {
             class: if todo.is_active { "todo-item todo-item--active" } else { "todo-item" },
+            ondragover: move |e| e.prevent_default(),
+            ondrop: move |e| {
+                e.prevent_default();
+                on_drop.call(id);
+            },
+            span {
+                class: "todo-item__handle",
+                draggable: "true",
+                aria_label: "Drag to reorder {todo.title}",
+                ondragstart: move |_| on_drag_start.call(id),
+                "⠿"
+            }
             input {
                 r#type: "checkbox",
                 checked: todo.is_completed,

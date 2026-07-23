@@ -54,6 +54,15 @@ impl UseTodos {
             }
         });
     }
+
+    pub fn reorder(&self, ordered_ids: Vec<i64>) {
+        let this = *self;
+        spawn(async move {
+            if api::reorder_todos(ordered_ids).await.is_ok() {
+                this.refresh();
+            }
+        });
+    }
 }
 
 pub fn use_todos() -> UseTodos {

@@ -99,6 +99,12 @@ pub mod todo {
         id: Option<i64>,
     }
 
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct ReorderArgs {
+        ordered_ids: Vec<i64>,
+    }
+
     pub async fn list_todos() -> Result<Vec<Todo>, String> {
         invoke0("todo_list").await
     }
@@ -140,5 +146,9 @@ pub mod todo {
 
     pub async fn set_active(id: Option<i64>) -> Result<(), String> {
         invoke("todo_set_active", &IdArgs { id }).await
+    }
+
+    pub async fn reorder_todos(ordered_ids: Vec<i64>) -> Result<Vec<Todo>, String> {
+        invoke("todo_reorder", &ReorderArgs { ordered_ids }).await
     }
 }

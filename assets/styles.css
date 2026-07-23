@@ -232,6 +232,18 @@ body {
   background: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
+.todo-item__handle {
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+  cursor: grab;
+  user-select: none;
+  line-height: 1;
+}
+
+.todo-item__handle:active {
+  cursor: grabbing;
+}
+
 .todo-item input[type="checkbox"] {
   appearance: none;
   width: 1.15rem;
