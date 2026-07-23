@@ -31,7 +31,6 @@ pub fn TodoItem(
             onmouseup: move |_| on_drop.call(id),
             span {
                 class: "todo-item__handle",
-                "data-tauri-drag-region": "false",
                 aria_label: "Drag to reorder {todo.title}",
                 onmousedown: move |_| on_drag_start.call(id),
                 "⠿"
