@@ -4,6 +4,7 @@ use shared::Todo;
 #[component]
 pub fn TodoItem(
     todo: Todo,
+    is_dragging: bool,
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
@@ -15,21 +16,24 @@ pub fn TodoItem(
         .map(|target| format!(" / {target}"))
         .unwrap_or_default();
     let id = todo.id;
+    let mut class = if todo.is_active {
+        "todo-item todo-item--active".to_string()
+    } else {
+        "todo-item".to_string()
+    };
+    if is_dragging {
+        class.push_str(" todo-item--dragging");
+    }
 
     rsx! {
         li {
-            class: if todo.is_active { "todo-item todo-item--active" } else { "todo-item" },
-            ondragover: move |e| e.prevent_default(),
-            ondrop: move |e| {
-                e.prevent_default();
-                on_drop.call(id);
-            },
+            class,
+            onmouseup: move |_| on_drop.call(id),
             span {
                 class: "todo-item__handle",
-                draggable: "true",
                 "data-tauri-drag-region": "false",
                 aria_label: "Drag to reorder {todo.title}",
-                ondragstart: move |_| on_drag_start.call(id),
+                onmousedown: move |_| on_drag_start.call(id),
                 "⠿"
             }
             input {

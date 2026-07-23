@@ -232,6 +232,10 @@ body {
   background: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
+.todo-item--dragging {
+  opacity: 0.5;
+}
+
 .todo-item__handle {
   flex-shrink: 0;
   color: var(--muted-foreground);

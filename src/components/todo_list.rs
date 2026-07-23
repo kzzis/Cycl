@@ -24,6 +24,7 @@ pub fn TodoList() -> Element {
                     TodoItem {
                         key: "{todo.id}",
                         todo: todo.clone(),
+                        is_dragging: *dragging_id.read() == Some(todo.id),
                         on_toggle_complete: move |id| todos.toggle_complete(id),
                         on_select_active: move |id| todos.select_active(id),
                         on_delete: move |id| todos.remove(id),
