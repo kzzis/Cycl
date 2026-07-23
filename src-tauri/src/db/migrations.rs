@@ -1,8 +1,9 @@
 use rusqlite::{Connection, Result};
 
-const MIGRATIONS: &[(&str, &str)] = &[(
-    "0001_initial",
-    r#"
+const MIGRATIONS: &[(&str, &str)] = &[
+    (
+        "0001_initial",
+        r#"
     CREATE TABLE todo (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
@@ -20,7 +21,15 @@ const MIGRATIONS: &[(&str, &str)] = &[(
         completed INTEGER NOT NULL DEFAULT 0
     );
     "#,
-)];
+    ),
+    (
+        "0002_add_todo_sort_order",
+        r#"
+    ALTER TABLE todo ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;
+    UPDATE todo SET sort_order = id;
+    "#,
+    ),
+];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。
 pub fn run(conn: &Connection) -> Result<()> {

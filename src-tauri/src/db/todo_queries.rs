@@ -19,7 +19,7 @@ fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
 
 pub fn list(conn: &Connection) -> AppResult<Vec<Todo>> {
     let mut stmt = conn.prepare(&format!(
-        "SELECT {SELECT_COLUMNS} FROM todo ORDER BY created_at ASC"
+        "SELECT {SELECT_COLUMNS} FROM todo ORDER BY sort_order ASC"
     ))?;
     let todos = stmt
         .query_map([], todo_from_row)?
@@ -41,7 +41,8 @@ pub fn get(conn: &Connection, id: i64) -> AppResult<Todo> {
 
 pub fn create(conn: &Connection, title: &str, target_count: Option<i64>) -> AppResult<Todo> {
     conn.execute(
-        "INSERT INTO todo (title, target_count) VALUES (?1, ?2)",
+        "INSERT INTO todo (title, target_count, sort_order)
+         VALUES (?1, ?2, (SELECT COALESCE(MAX(sort_order), -1) FROM todo) + 1)",
         (title, target_count),
     )?;
     get(conn, conn.last_insert_rowid())
@@ -107,6 +108,20 @@ pub fn get_active(conn: &Connection) -> AppResult<Option<Todo>> {
         rusqlite::Error::QueryReturnedNoRows => Ok(None),
         other => Err(AppError::Database(other)),
     })
+}
+
+/// ドラッグ&ドロップで確定した新しい順序を反映する。
+/// `ordered_ids`の並び順そのままを`sort_order`(0始まりの連番)として書き込む。
+pub fn reorder(conn: &Connection, ordered_ids: &[i64]) -> AppResult<()> {
+    let tx = conn.unchecked_transaction()?;
+    for (index, id) in ordered_ids.iter().enumerate() {
+        tx.execute(
+            "UPDATE todo SET sort_order = ?1 WHERE id = ?2",
+            (index as i64, id),
+        )?;
+    }
+    tx.commit()?;
+    Ok(())
 }
 
 /// ポモドーロセッション完了時にタイマーエンジンから呼ばれる。
@@ -182,6 +197,35 @@ mod tests {
         let todo = create(&conn, "作業", None).unwrap();
         let updated = increment_pomodoro_count(&conn, todo.id).unwrap();
         assert_eq!(updated.pomodoro_count, 1);
+    }
+
+    #[test]
+    fn create_appends_new_todo_after_existing_ones() {
+        let conn = setup_conn();
+        let a = create(&conn, "A", None).unwrap();
+        let b = create(&conn, "B", None).unwrap();
+
+        let listed = list(&conn).unwrap();
+        assert_eq!(
+            listed.iter().map(|t| t.id).collect::<Vec<_>>(),
+            [a.id, b.id]
+        );
+    }
+
+    #[test]
+    fn reorder_changes_the_list_order() {
+        let conn = setup_conn();
+        let a = create(&conn, "A", None).unwrap();
+        let b = create(&conn, "B", None).unwrap();
+        let c = create(&conn, "C", None).unwrap();
+
+        reorder(&conn, &[c.id, a.id, b.id]).unwrap();
+
+        let listed = list(&conn).unwrap();
+        assert_eq!(
+            listed.iter().map(|t| t.id).collect::<Vec<_>>(),
+            [c.id, a.id, b.id]
+        );
     }
 
     #[test]
