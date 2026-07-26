@@ -1,3 +1,4 @@
+use crate::Tag;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -10,4 +11,5 @@ pub struct Todo {
     pub target_count: Option<i64>,
     pub is_active: bool,
     pub created_at: String,
+    pub tags: Vec<Tag>,
 }

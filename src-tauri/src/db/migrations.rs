@@ -29,6 +29,22 @@ const MIGRATIONS: &[(&str, &str)] = &[
     UPDATE todo SET sort_order = id;
     "#,
     ),
+    (
+        "0003_tags",
+        r#"
+    CREATE TABLE tag (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        color TEXT NOT NULL DEFAULT '#6366f1'
+    );
+
+    CREATE TABLE todo_tag (
+        todo_id INTEGER NOT NULL REFERENCES todo(id) ON DELETE CASCADE,
+        tag_id  INTEGER NOT NULL REFERENCES tag(id)  ON DELETE CASCADE,
+        PRIMARY KEY (todo_id, tag_id)
+    );
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。

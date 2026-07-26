@@ -4,6 +4,7 @@ use std::sync::{Arc, Mutex};
 
 pub mod migrations;
 pub mod session_queries;
+pub mod tag_queries;
 pub mod todo_queries;
 
 pub struct AppState {
