@@ -3,6 +3,26 @@ use wasm_bindgen::{closure::Closure, JsCast};
 
 const FORM_ID: &str = "todo-add-form";
 
+/// タイトルが入力されていれば送信し、フォームを初期状態に戻す。
+fn try_submit(
+    mut title: Signal<String>,
+    mut target_count: Signal<String>,
+    on_submit: EventHandler<(String, Option<i64>)>,
+) {
+    let trimmed = title.read().trim().to_string();
+    if trimmed.is_empty() {
+        return;
+    }
+    let parsed_target = if target_count.read().trim().is_empty() {
+        None
+    } else {
+        target_count.read().parse::<i64>().ok()
+    };
+    on_submit.call((trimmed, parsed_target));
+    title.set(String::new());
+    target_count.set("1".to_string());
+}
+
 /// フォーカスがフォームの外へ出たら閉じる。入力欄間の移動では閉じないよう、
 /// 次のイベントループで`activeElement`がフォーム内かを確認してから判定する。
 fn close_when_focus_left(mut is_open: Signal<bool>) {
@@ -30,22 +50,6 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
     let mut target_count = use_signal(|| "1".to_string());
     let mut is_open = use_signal(|| false);
 
-    let submit = move |event: FormEvent| {
-        event.prevent_default();
-        let trimmed = title.read().trim().to_string();
-        if trimmed.is_empty() {
-            return;
-        }
-        let parsed_target = if target_count.read().trim().is_empty() {
-            None
-        } else {
-            target_count.read().parse::<i64>().ok()
-        };
-        on_submit.call((trimmed, parsed_target));
-        title.set(String::new());
-        target_count.set("1".to_string());
-    };
-
     // 普段は「+」だけ表示。押すと入力欄を開く。
     if !*is_open.read() {
         return rsx! {
@@ -63,7 +67,10 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
         form {
             id: FORM_ID,
             class: "todo-form",
-            onsubmit: submit,
+            onsubmit: move |e| {
+                e.prevent_default();
+                try_submit(title, target_count, on_submit);
+            },
             // フォーカスがフォーム外へ出たら閉じる(状態は保持)。
             onfocusout: move |_| close_when_focus_left(is_open),
             input {
@@ -72,6 +79,12 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 aria_label: "Todo title",
                 autofocus: true,
                 oninput: move |e| title.set(e.value()),
+                onkeydown: move |e| {
+                    if e.key() == Key::Enter {
+                        e.prevent_default();
+                        try_submit(title, target_count, on_submit);
+                    }
+                },
             }
             input {
                 value: "{target_count}",
