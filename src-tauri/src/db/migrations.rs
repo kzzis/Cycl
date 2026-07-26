@@ -80,6 +80,13 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ALTER TABLE todo ADD COLUMN focus_secs INTEGER NOT NULL DEFAULT 0;
     "#,
     ),
+    (
+        "0007_session_duration",
+        r#"
+    -- 各作業チャンクの長さ(秒)。統計グラフの時間集計に使う。
+    ALTER TABLE pomodoro_session ADD COLUMN duration_secs INTEGER NOT NULL DEFAULT 0;
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。
