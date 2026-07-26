@@ -3,6 +3,33 @@ use dioxus::prelude::*;
 use crate::hooks::use_tags::UseTags;
 use crate::hooks::use_timings::UseTimings;
 
+/// Enterキーが「確定用ではない」通常のEnterか(IME変換中を除外)。
+fn is_plain_enter(e: &KeyboardData) -> bool {
+    e.key() == Key::Enter
+        && !e.is_composing()
+        && e.downcast::<web_sys::KeyboardEvent>()
+            .map(|k| k.key_code() != 229)
+            .unwrap_or(true)
+}
+
+fn create_tag(mut name: Signal<String>, color: Signal<String>, tags: UseTags) {
+    let trimmed = name.read().trim().to_string();
+    if trimmed.is_empty() {
+        return;
+    }
+    tags.add(trimmed, color.read().clone());
+    name.set(String::new());
+}
+
+fn create_timing(mut name: Signal<String>, color: Signal<String>, timings: UseTimings) {
+    let trimmed = name.read().trim().to_string();
+    if trimmed.is_empty() {
+        return;
+    }
+    timings.add(trimmed, color.read().clone());
+    name.set(String::new());
+}
+
 /// 設定画面。タグとタイミングの作成・削除をここに集約する。
 #[component]
 pub fn Settings() -> Element {
@@ -14,31 +41,11 @@ pub fn Settings() -> Element {
     let mut timing_name = use_signal(String::new);
     let mut timing_color = use_signal(|| "#6366f1".to_string());
 
-    let submit_tag = move |event: FormEvent| {
-        event.prevent_default();
-        let trimmed = tag_name.read().trim().to_string();
-        if trimmed.is_empty() {
-            return;
-        }
-        tags.add(trimmed, tag_color.read().clone());
-        tag_name.set(String::new());
-    };
-
-    let submit_timing = move |event: FormEvent| {
-        event.prevent_default();
-        let trimmed = timing_name.read().trim().to_string();
-        if trimmed.is_empty() {
-            return;
-        }
-        timings.add(trimmed, timing_color.read().clone());
-        timing_name.set(String::new());
-    };
-
     rsx! {
         div { class: "settings",
             section { class: "settings__section",
                 h2 { class: "settings__title", "Tags" }
-                form { class: "settings__form", onsubmit: submit_tag,
+                div { class: "settings__form",
                     input {
                         r#type: "color",
                         class: "tag-bar__color",
@@ -52,8 +59,19 @@ pub fn Settings() -> Element {
                         placeholder: "New tag",
                         aria_label: "New tag name",
                         oninput: move |e| tag_name.set(e.value()),
+                        onkeydown: move |e| {
+                            if is_plain_enter(&e) {
+                                e.prevent_default();
+                                create_tag(tag_name, tag_color, tags);
+                            }
+                        },
                     }
-                    button { class: "btn btn--primary", r#type: "submit", "Create" }
+                    button {
+                        class: "btn btn--primary",
+                        r#type: "button",
+                        onclick: move |_| create_tag(tag_name, tag_color, tags),
+                        "Create"
+                    }
                 }
                 ul { class: "settings__list",
                     for tag in tags.items.read().iter().cloned() {
@@ -75,7 +93,7 @@ pub fn Settings() -> Element {
             }
             section { class: "settings__section",
                 h2 { class: "settings__title", "Timings" }
-                form { class: "settings__form", onsubmit: submit_timing,
+                div { class: "settings__form",
                     input {
                         r#type: "color",
                         class: "tag-bar__color",
@@ -89,8 +107,19 @@ pub fn Settings() -> Element {
                         placeholder: "New timing",
                         aria_label: "New timing name",
                         oninput: move |e| timing_name.set(e.value()),
+                        onkeydown: move |e| {
+                            if is_plain_enter(&e) {
+                                e.prevent_default();
+                                create_timing(timing_name, timing_color, timings);
+                            }
+                        },
                     }
-                    button { class: "btn btn--primary", r#type: "submit", "Create" }
+                    button {
+                        class: "btn btn--primary",
+                        r#type: "button",
+                        onclick: move |_| create_timing(timing_name, timing_color, timings),
+                        "Create"
+                    }
                 }
                 ul { class: "settings__list",
                     for timing in timings.items.read().iter().cloned() {
