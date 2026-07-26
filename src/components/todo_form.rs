@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 #[component]
 pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
     let mut title = use_signal(String::new);
-    let mut target_count = use_signal(String::new);
+    let mut target_count = use_signal(|| "1".to_string());
     let mut is_open = use_signal(|| false);
 
     let submit = move |event: FormEvent| {
@@ -19,7 +19,7 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
         };
         on_submit.call((trimmed, parsed_target));
         title.set(String::new());
-        target_count.set(String::new());
+        target_count.set("1".to_string());
     };
 
     // 普段は「+」だけ表示。押すと入力欄を開く。
@@ -56,6 +56,7 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 class: "todo-form__add",
                 r#type: "submit",
                 aria_label: "Add todo",
+                disabled: title.read().trim().is_empty(),
                 "+"
             }
             button {
@@ -64,7 +65,7 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 aria_label: "Cancel",
                 onclick: move |_| {
                     title.set(String::new());
-                    target_count.set(String::new());
+                    target_count.set("1".to_string());
                     is_open.set(false);
                 },
                 "✕"

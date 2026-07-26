@@ -384,6 +384,13 @@ body {
   transform: scale(0.95);
 }
 
+.todo-form__add:disabled {
+  background: var(--border-strong);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+  transform: none;
+}
+
 .todo-form__toggle {
   display: inline-flex;
   align-items: center;
