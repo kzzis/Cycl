@@ -73,6 +73,22 @@ pub mod timer {
     }
 }
 
+pub mod stats {
+    use super::invoke;
+    use serde::Serialize;
+    use shared::TagFocus;
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct PeriodArgs<'a> {
+        period: &'a str,
+    }
+
+    pub async fn focus_by_tag(period: &str) -> Result<Vec<TagFocus>, String> {
+        invoke("stats_focus_by_tag", &PeriodArgs { period }).await
+    }
+}
+
 pub mod timing {
     use super::{invoke, invoke0};
     use serde::Serialize;
