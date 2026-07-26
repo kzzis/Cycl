@@ -73,6 +73,13 @@ const MIGRATIONS: &[(&str, &str)] = &[
         ('event',     'Event',     '#14b8a6', 5, 1);
     "#,
     ),
+    (
+        "0006_focus_secs",
+        r#"
+    -- 累積作業時間(秒)。完了に達しなくても一時停止・タスク切替時に加算される。
+    ALTER TABLE todo ADD COLUMN focus_secs INTEGER NOT NULL DEFAULT 0;
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。

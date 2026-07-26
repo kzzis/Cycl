@@ -14,4 +14,6 @@ pub struct Todo {
     pub tags: Vec<Tag>,
     /// 'today' | 'tomorrow' | 'this_week' | 'planned' | 'someday' | 'event'
     pub category: String,
+    /// 累積作業時間(秒)。
+    pub focus_secs: i64,
 }
