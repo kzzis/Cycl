@@ -1,6 +1,30 @@
 use dioxus::prelude::*;
 use shared::{format_focus, Tag, Timing, Todo};
 
+/// IME変換中でない通常のEnterか(変換確定のEnterを除外)。
+fn is_plain_enter(e: &KeyboardData) -> bool {
+    e.key() == Key::Enter
+        && !e.is_composing()
+        && e.downcast::<web_sys::KeyboardEvent>()
+            .map(|k| k.key_code() != 229)
+            .unwrap_or(true)
+}
+
+/// 編集を確定してタイトルを更新する(空や変更なしなら破棄)。
+fn commit_rename(
+    id: i64,
+    original: &str,
+    mut is_editing: Signal<bool>,
+    draft: Signal<String>,
+    on_rename: EventHandler<(i64, String)>,
+) {
+    let new_title = draft.read().trim().to_string();
+    is_editing.set(false);
+    if !new_title.is_empty() && new_title != original {
+        on_rename.call((id, new_title));
+    }
+}
+
 #[component]
 pub fn TodoItem(
     todo: Todo,
@@ -10,7 +34,6 @@ pub fn TodoItem(
     /// このタスクが取り組み中かつタイマー動作中(再生/一時停止ボタンの切り替え用)。
     is_running: bool,
     on_toggle_complete: EventHandler<i64>,
-    on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
     on_drag_start: EventHandler<i64>,
     on_hover: EventHandler<i64>,
@@ -18,6 +41,7 @@ pub fn TodoItem(
     on_remove_tag: EventHandler<(i64, i64)>,
     on_change_category: EventHandler<(i64, String)>,
     on_toggle_timer: EventHandler<i64>,
+    on_rename: EventHandler<(i64, String)>,
 ) -> Element {
     let focus_label = format_focus(todo.focus_secs);
     let target_label = todo
@@ -35,6 +59,9 @@ pub fn TodoItem(
     }
 
     let mut show_menu = use_signal(|| false);
+    let mut is_editing = use_signal(|| false);
+    let mut draft = use_signal(String::new);
+
     // このTodoにまだ付いていないタグだけを追加候補に出す。
     let available: Vec<Tag> = all_tags
         .iter()
@@ -62,10 +89,42 @@ pub fn TodoItem(
                     aria_label: "Mark {todo.title} as complete",
                     onchange: move |_| on_toggle_complete.call(id),
                 }
-                button {
-                    class: if todo.is_completed { "todo-item__title todo-item__title--done" } else { "todo-item__title" },
-                    onclick: move |_| on_select_active.call(id),
-                    "{todo.title}"
+                if *is_editing.read() {
+                    input {
+                        class: "todo-item__title-edit",
+                        value: "{draft}",
+                        aria_label: "Edit task name",
+                        autofocus: true,
+                        oninput: move |e| draft.set(e.value()),
+                        onkeydown: {
+                            let original = todo.title.clone();
+                            move |e: KeyboardEvent| {
+                                if is_plain_enter(&e) {
+                                    e.prevent_default();
+                                    commit_rename(id, &original, is_editing, draft, on_rename);
+                                } else if e.key() == Key::Escape {
+                                    is_editing.set(false);
+                                }
+                            }
+                        },
+                        onfocusout: {
+                            let original = todo.title.clone();
+                            move |_| commit_rename(id, &original, is_editing, draft, on_rename)
+                        },
+                    }
+                } else {
+                    button {
+                        class: if todo.is_completed { "todo-item__title todo-item__title--done" } else { "todo-item__title" },
+                        title: "Click to rename",
+                        onclick: {
+                            let current = todo.title.clone();
+                            move |_| {
+                                draft.set(current.clone());
+                                is_editing.set(true);
+                            }
+                        },
+                        "{todo.title}"
+                    }
                 }
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
                 span { class: "todo-item__focus", "{focus_label}" }

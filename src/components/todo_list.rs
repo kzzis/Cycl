@@ -137,7 +137,6 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                         is_dragging: reorder_enabled && *dragging_id.read() == Some(todo.id),
                         is_running: todo.is_active && timer_running,
                         on_toggle_complete: move |id| todos.toggle_complete(id),
-                        on_select_active: move |id| todos.select_active(id),
                         on_delete: move |id| todos.remove(id),
                         on_drag_start: move |id| {
                             if reorder_enabled {
@@ -149,6 +148,15 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                         on_remove_tag: move |(todo_id, tag_id)| todos.remove_tag(todo_id, tag_id),
                         on_change_category: move |(todo_id, category)| todos.update_category(todo_id, category),
                         on_toggle_timer: toggle_timer,
+                        on_rename: move |(todo_id, title): (i64, String)| {
+                            let target = todos
+                                .items
+                                .read()
+                                .iter()
+                                .find(|t| t.id == todo_id)
+                                .and_then(|t| t.target_count);
+                            todos.rename(todo_id, title, target);
+                        },
                     }
                 }
             }

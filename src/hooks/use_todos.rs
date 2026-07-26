@@ -50,6 +50,16 @@ impl UseTodos {
         });
     }
 
+    /// タイトルを変更する。目標ポモドーロ数は現状維持のため呼び出し側から渡す。
+    pub fn rename(&self, id: i64, title: String, target_count: Option<i64>) {
+        let this = *self;
+        spawn(async move {
+            if api::update_todo(id, &title, target_count).await.is_ok() {
+                this.refresh();
+            }
+        });
+    }
+
     pub fn select_active(&self, id: i64) {
         let this = *self;
         spawn(async move {
