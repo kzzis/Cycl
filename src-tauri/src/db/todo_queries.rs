@@ -1,3 +1,4 @@
+use crate::db::tag_queries;
 use crate::error::{AppError, AppResult};
 use rusqlite::Connection;
 use shared::Todo;
@@ -14,29 +15,62 @@ fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
         target_count: row.get("target_count")?,
         is_active: row.get::<_, i64>("is_active")? != 0,
         created_at: row.get("created_at")?,
+        tags: Vec::new(),
     })
+}
+
+/// `todo_from_row`はタグを空で返すので、付与済みタグを読み込んで埋める。
+fn populate_tags(conn: &Connection, todos: &mut [Todo]) -> AppResult<()> {
+    for todo in todos.iter_mut() {
+        todo.tags = tag_queries::tags_for_todo(conn, todo.id)?;
+    }
+    Ok(())
 }
 
 pub fn list(conn: &Connection) -> AppResult<Vec<Todo>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {SELECT_COLUMNS} FROM todo ORDER BY sort_order ASC"
     ))?;
-    let todos = stmt
+    let mut todos = stmt
         .query_map([], todo_from_row)?
         .collect::<Result<Vec<_>, _>>()?;
+    populate_tags(conn, &mut todos)?;
+    Ok(todos)
+}
+
+/// 指定したタグが付いているTodoだけを返す。
+pub fn list_by_tag(conn: &Connection, tag_id: i64) -> AppResult<Vec<Todo>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {} FROM todo t
+         JOIN todo_tag tt ON tt.todo_id = t.id
+         WHERE tt.tag_id = ?1
+         ORDER BY t.sort_order ASC",
+        SELECT_COLUMNS
+            .split(", ")
+            .map(|c| format!("t.{c}"))
+            .collect::<Vec<_>>()
+            .join(", ")
+    ))?;
+    let mut todos = stmt
+        .query_map([tag_id], todo_from_row)?
+        .collect::<Result<Vec<_>, _>>()?;
+    populate_tags(conn, &mut todos)?;
     Ok(todos)
 }
 
 pub fn get(conn: &Connection, id: i64) -> AppResult<Todo> {
-    conn.query_row(
-        &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE id = ?1"),
-        [id],
-        todo_from_row,
-    )
-    .map_err(|e| match e {
-        rusqlite::Error::QueryReturnedNoRows => AppError::TodoNotFound(id),
-        other => AppError::Database(other),
-    })
+    let mut todo = conn
+        .query_row(
+            &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE id = ?1"),
+            [id],
+            todo_from_row,
+        )
+        .map_err(|e| match e {
+            rusqlite::Error::QueryReturnedNoRows => AppError::TodoNotFound(id),
+            other => AppError::Database(other),
+        })?;
+    todo.tags = tag_queries::tags_for_todo(conn, id)?;
+    Ok(todo)
 }
 
 pub fn create(conn: &Connection, title: &str, target_count: Option<i64>) -> AppResult<Todo> {
@@ -98,16 +132,24 @@ pub fn set_active(conn: &Connection, id: Option<i64>) -> AppResult<()> {
 
 /// 「現在取り組むTodo」を取得する。存在しなければ`None`。
 pub fn get_active(conn: &Connection) -> AppResult<Option<Todo>> {
-    conn.query_row(
-        &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE is_active = 1"),
-        [],
-        todo_from_row,
-    )
-    .map(Some)
-    .or_else(|e| match e {
-        rusqlite::Error::QueryReturnedNoRows => Ok(None),
-        other => Err(AppError::Database(other)),
-    })
+    let todo = conn
+        .query_row(
+            &format!("SELECT {SELECT_COLUMNS} FROM todo WHERE is_active = 1"),
+            [],
+            todo_from_row,
+        )
+        .map(Some)
+        .or_else(|e| match e {
+            rusqlite::Error::QueryReturnedNoRows => Ok::<_, AppError>(None),
+            other => Err(AppError::Database(other)),
+        })?;
+    match todo {
+        Some(mut todo) => {
+            todo.tags = tag_queries::tags_for_todo(conn, todo.id)?;
+            Ok(Some(todo))
+        }
+        None => Ok(None),
+    }
 }
 
 /// ドラッグ&ドロップで確定した新しい順序を反映する。

@@ -214,14 +214,20 @@ body {
 
 .todo-item {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.6rem 0.85rem;
   background: transparent;
   user-select: none;
   transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.todo-item__main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .todo-item:hover {
@@ -324,4 +330,204 @@ body {
 
 .muted {
   color: var(--muted-foreground);
+}
+
+/* --- Tags --- */
+
+.tag-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tag-bar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tag-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.2rem 0.1rem 0.1rem;
+  font-size: 0.8rem;
+}
+
+.tag-filter--active {
+  background: var(--surface-hover);
+}
+
+button.tag-filter {
+  cursor: pointer;
+  color: var(--foreground);
+  padding: 0.25rem 0.75rem;
+  background: transparent;
+}
+
+button.tag-filter.tag-filter--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.tag-filter__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.tag-filter__delete {
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+
+.tag-filter__delete:hover {
+  color: var(--danger);
+}
+
+.tag-bar__create {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tag-bar__color {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.tag-bar__name {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.tag-bar__name:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.todo-item__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding-left: 1.9rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.3rem 0.1rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.tag-chip__remove {
+  background: rgba(0, 0, 0, 0.25);
+  border: none;
+  color: #fff;
+  border-radius: var(--radius-full);
+  width: 1rem;
+  height: 1rem;
+  line-height: 1;
+  font-size: 0.6rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag-chip__remove:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.tag-add {
+  position: relative;
+}
+
+.tag-add__button {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--muted-foreground);
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.tag-add__button:hover {
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+
+.tag-add__menu {
+  position: absolute;
+  z-index: 20;
+  top: 1.6rem;
+  left: 0;
+  min-width: 8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.3rem;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+}
+
+.tag-add__option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--foreground);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.tag-add__option:hover {
+  background: var(--surface-hover);
+}
+
+.tag-add__swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
