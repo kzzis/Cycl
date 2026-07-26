@@ -63,6 +63,30 @@ impl UseTodos {
             }
         });
     }
+
+    pub fn add_tag(&self, todo_id: i64, tag_id: i64) {
+        let this = *self;
+        spawn(async move {
+            if crate::tauri_api::tag::add_tag(todo_id, tag_id)
+                .await
+                .is_ok()
+            {
+                this.refresh();
+            }
+        });
+    }
+
+    pub fn remove_tag(&self, todo_id: i64, tag_id: i64) {
+        let this = *self;
+        spawn(async move {
+            if crate::tauri_api::tag::remove_tag(todo_id, tag_id)
+                .await
+                .is_ok()
+            {
+                this.refresh();
+            }
+        });
+    }
 }
 
 pub fn use_todos() -> UseTodos {

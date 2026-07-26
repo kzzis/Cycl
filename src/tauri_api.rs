@@ -73,6 +73,63 @@ pub mod timer {
     }
 }
 
+pub mod tag {
+    use super::invoke;
+    use super::invoke0;
+    use serde::Serialize;
+    use shared::{Tag, Todo};
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CreateArgs<'a> {
+        name: &'a str,
+        color: &'a str,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct IdArgs {
+        id: i64,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct TodoTagArgs {
+        todo_id: i64,
+        tag_id: i64,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct TagIdArgs {
+        tag_id: i64,
+    }
+
+    pub async fn list_tags() -> Result<Vec<Tag>, String> {
+        invoke0("tag_list").await
+    }
+
+    pub async fn create_tag(name: &str, color: &str) -> Result<Tag, String> {
+        invoke("tag_create", &CreateArgs { name, color }).await
+    }
+
+    pub async fn delete_tag(id: i64) -> Result<(), String> {
+        invoke("tag_delete", &IdArgs { id }).await
+    }
+
+    pub async fn add_tag(todo_id: i64, tag_id: i64) -> Result<Todo, String> {
+        invoke("todo_add_tag", &TodoTagArgs { todo_id, tag_id }).await
+    }
+
+    pub async fn remove_tag(todo_id: i64, tag_id: i64) -> Result<Todo, String> {
+        invoke("todo_remove_tag", &TodoTagArgs { todo_id, tag_id }).await
+    }
+
+    pub async fn list_todos_by_tag(tag_id: i64) -> Result<Vec<Todo>, String> {
+        invoke("todo_list_by_tag", &TagIdArgs { tag_id }).await
+    }
+}
+
 pub mod todo {
     use super::{invoke, invoke0};
     use serde::Serialize;

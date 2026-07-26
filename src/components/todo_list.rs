@@ -1,12 +1,15 @@
 use dioxus::prelude::*;
 
-use super::{TodoForm, TodoItem};
+use super::{TagBar, TodoForm, TodoItem};
+use crate::hooks::use_tags::use_tags;
 use crate::hooks::use_todos::use_todos;
 
 #[component]
 pub fn TodoList() -> Element {
     let todos = use_todos();
+    let tags = use_tags();
     let mut dragging_id = use_signal(|| None::<i64>);
+    let mut filter_tag = use_signal(|| None::<i64>);
 
     if *todos.is_loading.read() {
         return rsx! { p { class: "muted", "Loading..." } };
@@ -49,8 +52,30 @@ pub fn TodoList() -> Element {
         items.insert(to, moved);
     };
 
+    let filter = *filter_tag.read();
+    // フィルタが有効なときはドラッグ並び替えを無効化する(部分集合の並び替えは混乱を招くため)。
+    let reorder_enabled = filter.is_none();
+    let all_tags = tags.items.read().clone();
+    let visible: Vec<_> = todos
+        .items
+        .read()
+        .iter()
+        .filter(|todo| match filter {
+            Some(tag_id) => todo.tags.iter().any(|t| t.id == tag_id),
+            None => true,
+        })
+        .cloned()
+        .collect();
+
     rsx! {
         div { class: "todo-list",
+            TagBar {
+                tags: all_tags.clone(),
+                active_filter: filter,
+                on_filter: move |f| filter_tag.set(f),
+                on_create: move |(name, color): (String, String)| tags.add(name, color),
+                on_delete: move |id| tags.remove(id),
+            }
             TodoForm {
                 on_submit: move |(title, target_count): (String, Option<i64>)| {
                     todos.add(title, target_count);
@@ -59,16 +84,23 @@ pub fn TodoList() -> Element {
             ul {
                 onmouseup: end_drag,
                 onmouseleave: end_drag,
-                for todo in todos.items.read().iter().cloned() {
+                for todo in visible {
                     TodoItem {
                         key: "{todo.id}",
                         todo: todo.clone(),
-                        is_dragging: *dragging_id.read() == Some(todo.id),
+                        all_tags: all_tags.clone(),
+                        is_dragging: reorder_enabled && *dragging_id.read() == Some(todo.id),
                         on_toggle_complete: move |id| todos.toggle_complete(id),
                         on_select_active: move |id| todos.select_active(id),
                         on_delete: move |id| todos.remove(id),
-                        on_drag_start: move |id| dragging_id.set(Some(id)),
+                        on_drag_start: move |id| {
+                            if reorder_enabled {
+                                dragging_id.set(Some(id));
+                            }
+                        },
                         on_hover: reorder_on_hover,
+                        on_add_tag: move |(todo_id, tag_id)| todos.add_tag(todo_id, tag_id),
+                        on_remove_tag: move |(todo_id, tag_id)| todos.remove_tag(todo_id, tag_id),
                     }
                 }
             }
