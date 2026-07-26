@@ -42,22 +42,56 @@ body {
 .app {
   height: 100vh;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   background: var(--surface);
+}
+
+.app__tabs {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem 0.75rem 0.5rem 5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.app__tab {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 1rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app__tab:hover {
+  color: var(--foreground);
+}
+
+.app__tab--active {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.app__content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
 }
 
 /* --- Pomodoro timer --- */
 
 .pomodoro {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
   padding: 2.5rem 2.25rem;
-  width: 20rem;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
 }
 
 .pomodoro__phase {

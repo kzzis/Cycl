@@ -22,7 +22,7 @@ pub fn PomodoroTimer() -> Element {
     let offset = circumference * (1.0 - progress);
 
     rsx! {
-        div { class: "pomodoro", "data-tauri-drag-region": "deep",
+        div { class: "pomodoro",
             p { class: "pomodoro__phase", "{phase_label(state.phase)}" }
             div { class: "pomodoro__ring",
                 svg {
