@@ -746,11 +746,13 @@ button.tag-filter.tag-filter--active {
 }
 
 .timer-status__phase {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted-foreground);
+  color: var(--foreground);
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timer-status__time {
