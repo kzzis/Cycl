@@ -1,27 +1,13 @@
 use dioxus::prelude::*;
 use shared::{format_focus, Timing, Todo};
 
+/// Tasksタブのマスター。タイミングの選択に専念する(作成・削除は設定画面へ)。
 #[component]
 pub fn TimingList(
     timings: Vec<Timing>,
     todos: Vec<Todo>,
     on_select: EventHandler<Timing>,
-    on_create: EventHandler<(String, String)>,
-    on_delete: EventHandler<i64>,
 ) -> Element {
-    let mut name = use_signal(String::new);
-    let mut color = use_signal(|| "#6366f1".to_string());
-
-    let submit = move |event: FormEvent| {
-        event.prevent_default();
-        let trimmed = name.read().trim().to_string();
-        if trimmed.is_empty() {
-            return;
-        }
-        on_create.call((trimmed, color.read().clone()));
-        name.set(String::new());
-    };
-
     rsx! {
         div { class: "timing-list",
             for timing in timings.iter().cloned() {
@@ -43,34 +29,9 @@ pub fn TimingList(
                                 span { class: "timing-row__focus", "{focus_label}" }
                                 span { class: "timing-row__count", "{count}" }
                             }
-                            if !timing.is_builtin {
-                                button {
-                                    class: "timing-row__delete",
-                                    aria_label: "Delete timing {timing.name}",
-                                    onclick: move |_| on_delete.call(timing.id),
-                                    "✕"
-                                }
-                            }
                         }
                     }
                 }
-            }
-            form { class: "timing-create", onsubmit: submit,
-                input {
-                    r#type: "color",
-                    class: "tag-bar__color",
-                    value: "{color}",
-                    aria_label: "Timing color",
-                    oninput: move |e| color.set(e.value()),
-                }
-                input {
-                    class: "tag-bar__name",
-                    value: "{name}",
-                    placeholder: "New timing",
-                    aria_label: "New timing name",
-                    oninput: move |e| name.set(e.value()),
-                }
-                button { class: "btn btn--ghost", r#type: "submit", "Add" }
             }
         }
     }

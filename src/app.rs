@@ -2,8 +2,10 @@
 
 use dioxus::prelude::*;
 
-use crate::components::{PomodoroTimer, TasksView};
+use crate::components::{PomodoroTimer, Settings, TasksView};
+use crate::hooks::use_tags::use_tags;
 use crate::hooks::use_timer::use_timer;
+use crate::hooks::use_timings::use_timings;
 use crate::hooks::use_todos::use_todos;
 
 static CSS: Asset = asset!("/assets/styles.css");
@@ -12,17 +14,22 @@ static CSS: Asset = asset!("/assets/styles.css");
 pub enum Tab {
     Timer,
     Tasks,
+    Settings,
 }
 
 pub fn App() -> Element {
     let mut tab = use_signal(|| Tab::Timer);
     let todos = use_todos();
     let timer = use_timer();
-    // タブ状態・Todos・タイマーをコンテキストで共有し、全ビューが同じ状態を見るようにする。
-    // (取り組み中タスクの変更などがビュー間で即座に反映される)
+    let tags = use_tags();
+    let timings = use_timings();
+    // タブ状態や各種状態をコンテキストで共有し、全ビューが同じ状態を見るようにする。
+    // (取り組み中タスクやタグ/タイミングの変更がビュー間で即座に反映される)
     use_context_provider(|| tab);
     use_context_provider(|| todos);
     use_context_provider(|| timer);
+    use_context_provider(|| tags);
+    use_context_provider(|| timings);
     let active = *tab.read();
 
     rsx! {
@@ -46,8 +53,14 @@ pub fn App() -> Element {
                     onclick: move |_| tab.set(Tab::Tasks),
                     "Tasks"
                 }
+                button {
+                    class: if active == Tab::Settings { "app__gear app__gear--active" } else { "app__gear" },
+                    aria_label: "Settings",
+                    onclick: move |_| tab.set(Tab::Settings),
+                    "⚙"
+                }
             }
-            // 両ビューを常にマウントしたままにし、非アクティブ側をCSSで隠す。
+            // 各ビューを常にマウントしたままにし、非アクティブ側をCSSで隠す。
             // こうするとタブを切り替えても各ビューのローカル状態が保持される。
             div { class: "app__content",
                 div {
@@ -57,6 +70,10 @@ pub fn App() -> Element {
                 div {
                     class: if active == Tab::Tasks { "tab-panel" } else { "tab-panel tab-panel--hidden" },
                     TasksView {}
+                }
+                div {
+                    class: if active == Tab::Settings { "tab-panel" } else { "tab-panel tab-panel--hidden" },
+                    Settings {}
                 }
             }
         }

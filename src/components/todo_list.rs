@@ -2,17 +2,17 @@ use dioxus::prelude::*;
 use shared::Timing;
 
 use super::{TagBar, TodoForm, TodoItem};
-use crate::hooks::use_tags::use_tags;
+use crate::hooks::use_tags::UseTags;
 use crate::hooks::use_timer::UseTimer;
-use crate::hooks::use_timings::use_timings;
+use crate::hooks::use_timings::UseTimings;
 use crate::hooks::use_todos::UseTodos;
 
 /// 単一タイミングのTodo詳細ビュー。マスター(タイミング一覧)から遷移してくる。
 #[component]
 pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
     let todos = use_context::<UseTodos>();
-    let tags = use_tags();
-    let timings = use_timings();
+    let tags = use_context::<UseTags>();
+    let timings = use_context::<UseTimings>();
     let timer = use_context::<UseTimer>();
     let mut dragging_id = use_signal(|| None::<i64>);
     let mut filter_tag = use_signal(|| None::<i64>);
@@ -119,8 +119,6 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                 tags: all_tags.clone(),
                 active_filter: filter,
                 on_filter: move |f| filter_tag.set(f),
-                on_create: move |(name, color): (String, String)| tags.add(name, color),
-                on_delete: move |id| tags.remove(id),
             }
             TodoForm {
                 on_submit: move |(title, target_count): (String, Option<i64>)| {
