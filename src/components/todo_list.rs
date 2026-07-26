@@ -2,7 +2,6 @@ use dioxus::prelude::*;
 use shared::Timing;
 
 use super::{TagBar, TodoForm, TodoItem};
-use crate::app::Tab;
 use crate::hooks::use_tags::use_tags;
 use crate::hooks::use_timer::UseTimer;
 use crate::hooks::use_timings::use_timings;
@@ -15,15 +14,30 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
     let tags = use_tags();
     let timings = use_timings();
     let timer = use_context::<UseTimer>();
-    let mut tab = use_context::<Signal<Tab>>();
     let mut dragging_id = use_signal(|| None::<i64>);
     let mut filter_tag = use_signal(|| None::<i64>);
 
-    // 再生ボタン: そのタスクを取り組み中にし、タイマーを新しく開始してTimerタブへ移る。
-    let start_task = move |id: i64| {
-        todos.select_active(id);
-        timer.start_fresh();
-        tab.set(Tab::Timer);
+    let timer_running = timer
+        .state
+        .read()
+        .as_ref()
+        .map(|s| s.is_running)
+        .unwrap_or(false);
+
+    // 再生/一時停止ボタン。動作中の取り組みタスクなら一時停止、
+    // 取り組み中で停止中なら再開、別タスクなら切り替えて新規開始する。
+    let toggle_timer = move |id: i64| {
+        let is_active = todos.items.read().iter().any(|t| t.id == id && t.is_active);
+        if is_active {
+            if timer_running {
+                timer.pause();
+            } else {
+                timer.start();
+            }
+        } else {
+            todos.select_active(id);
+            timer.start_fresh();
+        }
     };
 
     if *todos.is_loading.read() {
@@ -123,6 +137,7 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                         all_tags: all_tags.clone(),
                         all_timings: all_timings.clone(),
                         is_dragging: reorder_enabled && *dragging_id.read() == Some(todo.id),
+                        is_running: todo.is_active && timer_running,
                         on_toggle_complete: move |id| todos.toggle_complete(id),
                         on_select_active: move |id| todos.select_active(id),
                         on_delete: move |id| todos.remove(id),
@@ -135,7 +150,7 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                         on_add_tag: move |(todo_id, tag_id)| todos.add_tag(todo_id, tag_id),
                         on_remove_tag: move |(todo_id, tag_id)| todos.remove_tag(todo_id, tag_id),
                         on_change_category: move |(todo_id, category)| todos.update_category(todo_id, category),
-                        on_start: start_task,
+                        on_toggle_timer: toggle_timer,
                     }
                 }
             }

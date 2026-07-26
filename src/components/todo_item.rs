@@ -7,6 +7,8 @@ pub fn TodoItem(
     all_tags: Vec<Tag>,
     all_timings: Vec<Timing>,
     is_dragging: bool,
+    /// このタスクが取り組み中かつタイマー動作中(再生/一時停止ボタンの切り替え用)。
+    is_running: bool,
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
@@ -15,7 +17,7 @@ pub fn TodoItem(
     on_add_tag: EventHandler<(i64, i64)>,
     on_remove_tag: EventHandler<(i64, i64)>,
     on_change_category: EventHandler<(i64, String)>,
-    on_start: EventHandler<i64>,
+    on_toggle_timer: EventHandler<i64>,
 ) -> Element {
     let focus_label = format_focus(todo.focus_secs);
     let target_label = todo
@@ -69,9 +71,9 @@ pub fn TodoItem(
                 span { class: "todo-item__focus", "{focus_label}" }
                 button {
                     class: "todo-item__start",
-                    aria_label: "Start timer for {todo.title}",
-                    onclick: move |_| on_start.call(id),
-                    "▶"
+                    aria_label: if is_running { "Pause timer for {todo.title}" } else { "Start timer for {todo.title}" },
+                    onclick: move |_| on_toggle_timer.call(id),
+                    if is_running { "⏸" } else { "▶" }
                 }
                 select {
                     class: "todo-item__category",
