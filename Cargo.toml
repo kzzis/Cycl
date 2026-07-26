@@ -9,7 +9,7 @@ dioxus = { version = "=0.6.3", features = ["web"] }
 dioxus-logger = "=0.6.2"
 wasm-bindgen = "=0.2.126"
 wasm-bindgen-futures = "=0.4.76"
-web-sys = "=0.3.103"
+web-sys = { version = "=0.3.103", features = ["Window", "Document", "Element", "Node"] }
 js-sys = "=0.3.103"
 serde = { version = "=1.0.228", features = ["derive"] }
 serde-wasm-bindgen = "=0.6.5"
