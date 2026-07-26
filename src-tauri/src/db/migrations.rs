@@ -45,6 +45,13 @@ const MIGRATIONS: &[(&str, &str)] = &[
     );
     "#,
     ),
+    (
+        "0004_category",
+        r#"
+    -- category: 'today' | 'tomorrow' | 'this_week' | 'planned' | 'someday' | 'event'
+    ALTER TABLE todo ADD COLUMN category TEXT NOT NULL DEFAULT 'someday';
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。

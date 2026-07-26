@@ -1,9 +1,11 @@
+mod category_tabs;
 mod pomodoro_timer;
 mod tag_bar;
 mod todo_form;
 mod todo_item;
 mod todo_list;
 
+pub use category_tabs::CategoryTabs;
 pub use pomodoro_timer::PomodoroTimer;
 pub use tag_bar::TagBar;
 pub use todo_form::TodoForm;

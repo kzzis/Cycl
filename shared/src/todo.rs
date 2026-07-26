@@ -12,4 +12,6 @@ pub struct Todo {
     pub is_active: bool,
     pub created_at: String,
     pub tags: Vec<Tag>,
+    /// 'today' | 'tomorrow' | 'this_week' | 'planned' | 'someday' | 'event'
+    pub category: String,
 }

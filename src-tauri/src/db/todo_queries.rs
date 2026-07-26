@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use shared::Todo;
 
 const SELECT_COLUMNS: &str =
-    "id, title, is_completed, pomodoro_count, target_count, is_active, created_at";
+    "id, title, is_completed, pomodoro_count, target_count, is_active, created_at, category";
 
 fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
     Ok(Todo {
@@ -16,6 +16,7 @@ fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
         is_active: row.get::<_, i64>("is_active")? != 0,
         created_at: row.get("created_at")?,
         tags: Vec::new(),
+        category: row.get("category")?,
     })
 }
 
@@ -58,6 +59,18 @@ pub fn list_by_tag(conn: &Connection, tag_id: i64) -> AppResult<Vec<Todo>> {
     Ok(todos)
 }
 
+/// 指定したカテゴリのTodoだけを返す。
+pub fn list_by_category(conn: &Connection, category: &str) -> AppResult<Vec<Todo>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {SELECT_COLUMNS} FROM todo WHERE category = ?1 ORDER BY sort_order ASC"
+    ))?;
+    let mut todos = stmt
+        .query_map([category], todo_from_row)?
+        .collect::<Result<Vec<_>, _>>()?;
+    populate_tags(conn, &mut todos)?;
+    Ok(todos)
+}
+
 pub fn get(conn: &Connection, id: i64) -> AppResult<Todo> {
     let mut todo = conn
         .query_row(
@@ -91,6 +104,18 @@ pub fn update(
     let affected = conn.execute(
         "UPDATE todo SET title = ?1, target_count = ?2 WHERE id = ?3",
         (title, target_count, id),
+    )?;
+    if affected == 0 {
+        return Err(AppError::TodoNotFound(id));
+    }
+    get(conn, id)
+}
+
+/// Todoのタイミングカテゴリを変更する。
+pub fn update_category(conn: &Connection, id: i64, category: &str) -> AppResult<Todo> {
+    let affected = conn.execute(
+        "UPDATE todo SET category = ?1 WHERE id = ?2",
+        (category, id),
     )?;
     if affected == 0 {
         return Err(AppError::TodoNotFound(id));
@@ -206,6 +231,29 @@ mod tests {
         let conn = setup_conn();
         let err = get(&conn, 999).unwrap_err();
         assert!(matches!(err, AppError::TodoNotFound(999)));
+    }
+
+    #[test]
+    fn new_todo_defaults_to_someday_category() {
+        let conn = setup_conn();
+        let todo = create(&conn, "作業", None).unwrap();
+        assert_eq!(todo.category, "someday");
+    }
+
+    #[test]
+    fn update_category_and_list_by_category() {
+        let conn = setup_conn();
+        let a = create(&conn, "A", None).unwrap();
+        let b = create(&conn, "B", None).unwrap();
+
+        let updated = update_category(&conn, a.id, "today").unwrap();
+        assert_eq!(updated.category, "today");
+
+        let today = list_by_category(&conn, "today").unwrap();
+        assert_eq!(today.iter().map(|t| t.id).collect::<Vec<_>>(), [a.id]);
+
+        let someday = list_by_category(&conn, "someday").unwrap();
+        assert_eq!(someday.iter().map(|t| t.id).collect::<Vec<_>>(), [b.id]);
     }
 
     #[test]

@@ -19,10 +19,14 @@ impl UseTodos {
         });
     }
 
-    pub fn add(&self, title: String, target_count: Option<i64>) {
+    /// Todoを追加する。`category`が既定(someday)以外なら作成後にそのカテゴリへ移す。
+    pub fn add(&self, title: String, target_count: Option<i64>, category: String) {
         let this = *self;
         spawn(async move {
-            if api::create_todo(&title, target_count).await.is_ok() {
+            if let Ok(todo) = api::create_todo(&title, target_count).await {
+                if category != shared::DEFAULT_CATEGORY {
+                    let _ = api::update_category(todo.id, &category).await;
+                }
                 this.refresh();
             }
         });
@@ -83,6 +87,15 @@ impl UseTodos {
                 .await
                 .is_ok()
             {
+                this.refresh();
+            }
+        });
+    }
+
+    pub fn update_category(&self, id: i64, category: String) {
+        let this = *self;
+        spawn(async move {
+            if api::update_category(id, &category).await.is_ok() {
                 this.refresh();
             }
         });

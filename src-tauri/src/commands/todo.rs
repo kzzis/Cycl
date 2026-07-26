@@ -54,3 +54,15 @@ pub fn todo_reorder(state: State<AppState>, ordered_ids: Vec<i64>) -> AppResult<
     todo_queries::reorder(&conn, &ordered_ids)?;
     todo_queries::list(&conn)
 }
+
+#[tauri::command]
+pub fn todo_list_by_category(state: State<AppState>, category: String) -> AppResult<Vec<Todo>> {
+    let conn = state.db.lock().unwrap();
+    todo_queries::list_by_category(&conn, &category)
+}
+
+#[tauri::command]
+pub fn todo_update_category(state: State<AppState>, id: i64, category: String) -> AppResult<Todo> {
+    let conn = state.db.lock().unwrap();
+    todo_queries::update_category(&conn, id, &category)
+}

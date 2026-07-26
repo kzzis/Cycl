@@ -162,6 +162,19 @@ pub mod todo {
         ordered_ids: Vec<i64>,
     }
 
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CategoryArgs {
+        category: String,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct UpdateCategoryArgs {
+        id: i64,
+        category: String,
+    }
+
     pub async fn list_todos() -> Result<Vec<Todo>, String> {
         invoke0("todo_list").await
     }
@@ -207,5 +220,26 @@ pub mod todo {
 
     pub async fn reorder_todos(ordered_ids: Vec<i64>) -> Result<Vec<Todo>, String> {
         invoke("todo_reorder", &ReorderArgs { ordered_ids }).await
+    }
+
+    pub async fn list_todos_by_category(category: &str) -> Result<Vec<Todo>, String> {
+        invoke(
+            "todo_list_by_category",
+            &CategoryArgs {
+                category: category.to_string(),
+            },
+        )
+        .await
+    }
+
+    pub async fn update_category(id: i64, category: &str) -> Result<Todo, String> {
+        invoke(
+            "todo_update_category",
+            &UpdateCategoryArgs {
+                id,
+                category: category.to_string(),
+            },
+        )
+        .await
     }
 }

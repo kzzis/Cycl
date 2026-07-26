@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use shared::{Tag, Todo};
+use shared::{Tag, Todo, CATEGORIES};
 
 #[component]
 pub fn TodoItem(
@@ -13,6 +13,7 @@ pub fn TodoItem(
     on_hover: EventHandler<i64>,
     on_add_tag: EventHandler<(i64, i64)>,
     on_remove_tag: EventHandler<(i64, i64)>,
+    on_change_category: EventHandler<(i64, String)>,
 ) -> Element {
     let target_label = todo
         .target_count
@@ -62,6 +63,15 @@ pub fn TodoItem(
                     "{todo.title}"
                 }
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
+                select {
+                    class: "todo-item__category",
+                    aria_label: "Category for {todo.title}",
+                    value: "{todo.category}",
+                    onchange: move |e| on_change_category.call((id, e.value())),
+                    for (value, label) in CATEGORIES.iter().copied() {
+                        option { value: "{value}", selected: todo.category == value, "{label}" }
+                    }
+                }
                 button {
                     class: "todo-item__delete",
                     aria_label: "Delete {todo.title}",
