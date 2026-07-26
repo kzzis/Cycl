@@ -107,9 +107,10 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
             }
             button {
                 class: "todo-form__add",
-                r#type: "submit",
+                r#type: "button",
                 aria_label: "Add todo",
                 disabled: title.read().trim().is_empty(),
+                onclick: move |_| try_submit(title, target_count, on_submit),
                 "+"
             }
         }
