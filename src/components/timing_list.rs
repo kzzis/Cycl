@@ -26,7 +26,9 @@ pub fn TimingList(
         div { class: "timing-list",
             for timing in timings.iter().cloned() {
                 {
-                    let count = todos.iter().filter(|t| t.category == timing.key).count();
+                    let in_timing = todos.iter().filter(|t| t.category == timing.key);
+                    let count = in_timing.clone().count();
+                    let focus_mins: i64 = in_timing.map(|t| t.focus_secs).sum::<i64>() / 60;
                     let selected = timing.clone();
                     rsx! {
                         div { class: "timing-row",
@@ -38,6 +40,7 @@ pub fn TimingList(
                                     style: "background-color: {timing.color}",
                                 }
                                 span { class: "timing-row__name", "{timing.name}" }
+                                span { class: "timing-row__focus", "{focus_mins}m" }
                                 span { class: "timing-row__count", "{count}" }
                             }
                             if !timing.is_builtin {

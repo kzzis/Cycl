@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use shared::Timing;
 
-use super::{TimingList, TodoList};
+use super::{TimerStatus, TimingList, TodoList};
 use crate::hooks::use_timings::use_timings;
 use crate::hooks::use_todos::UseTodos;
 
@@ -14,25 +14,30 @@ pub fn TasksView() -> Element {
 
     let current = selected.read().clone();
 
-    match current {
-        Some(timing) => rsx! {
-            TodoList {
-                timing,
-                on_back: move |_| {
-                    // 詳細で追加/変更された内容をマスターの件数に反映するため取り直す。
-                    todos.refresh();
-                    selected.set(None);
+    rsx! {
+        div { class: "tasks-view",
+            TimerStatus {}
+            match current {
+                Some(timing) => rsx! {
+                    TodoList {
+                        timing,
+                        on_back: move |_| {
+                            // 詳細で追加/変更された内容をマスターの件数に反映するため取り直す。
+                            todos.refresh();
+                            selected.set(None);
+                        },
+                    }
+                },
+                None => rsx! {
+                    TimingList {
+                        timings: timings.items.read().clone(),
+                        todos: todos.items.read().clone(),
+                        on_select: move |t: Timing| selected.set(Some(t)),
+                        on_create: move |(name, color): (String, String)| timings.add(name, color),
+                        on_delete: move |id| timings.remove(id),
+                    }
                 },
             }
-        },
-        None => rsx! {
-            TimingList {
-                timings: timings.items.read().clone(),
-                todos: todos.items.read().clone(),
-                on_select: move |t: Timing| selected.set(Some(t)),
-                on_create: move |(name, color): (String, String)| timings.add(name, color),
-                on_delete: move |id| timings.remove(id),
-            }
-        },
+        }
     }
 }
