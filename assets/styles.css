@@ -359,6 +359,31 @@ body {
   width: 5.5rem;
 }
 
+.todo-form__add {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.todo-form__add:hover {
+  background: var(--primary-hover);
+}
+
+.todo-form__add:active {
+  transform: scale(0.95);
+}
+
 .todo-item {
   display: flex;
   flex-direction: column;

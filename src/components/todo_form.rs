@@ -37,7 +37,12 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 aria_label: "Target pomodoro count",
                 oninput: move |e| target_count.set(e.value()),
             }
-            button { class: "btn btn--primary", r#type: "submit", "Add" }
+            button {
+                class: "todo-form__add",
+                r#type: "submit",
+                aria_label: "Add todo",
+                "+"
+            }
         }
     }
 }
