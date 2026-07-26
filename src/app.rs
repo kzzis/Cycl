@@ -38,10 +38,16 @@ pub fn App() -> Element {
                     "Tasks"
                 }
             }
+            // 両ビューを常にマウントしたままにし、非アクティブ側をCSSで隠す。
+            // こうするとタブを切り替えても各ビューのローカル状態が保持される。
             div { class: "app__content",
-                match active {
-                    Tab::Timer => rsx! { PomodoroTimer {} },
-                    Tab::Tasks => rsx! { TasksView {} },
+                div {
+                    class: if active == Tab::Timer { "tab-panel" } else { "tab-panel tab-panel--hidden" },
+                    PomodoroTimer {}
+                }
+                div {
+                    class: if active == Tab::Tasks { "tab-panel" } else { "tab-panel tab-panel--hidden" },
+                    TasksView {}
                 }
             }
         }
