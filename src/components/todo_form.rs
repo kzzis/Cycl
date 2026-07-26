@@ -80,11 +80,21 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 autofocus: true,
                 oninput: move |e| title.set(e.value()),
                 onkeydown: move |e| {
-                    // IME変換確定のEnterでは送信しない。
-                    if e.key() == Key::Enter && !e.is_composing() {
-                        e.prevent_default();
-                        try_submit(title, target_count, on_submit);
+                    if e.key() != Key::Enter {
+                        return;
                     }
+                    // IME変換中(確定のEnter含む)は送信しない。
+                    // isComposing に加え、変換中に出る keyCode 229 も見る(WKWebViewでの取りこぼし対策)。
+                    let composing = e.is_composing()
+                        || e
+                            .downcast::<web_sys::KeyboardEvent>()
+                            .map(|k| k.key_code() == 229)
+                            .unwrap_or(false);
+                    if composing {
+                        return;
+                    }
+                    e.prevent_default();
+                    try_submit(title, target_count, on_submit);
                 },
             }
             input {
