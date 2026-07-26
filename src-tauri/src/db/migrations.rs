@@ -52,6 +52,27 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ALTER TABLE todo ADD COLUMN category TEXT NOT NULL DEFAULT 'someday';
     "#,
     ),
+    (
+        "0005_timings",
+        r#"
+    CREATE TABLE timing (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        key TEXT NOT NULL UNIQUE,
+        name TEXT NOT NULL,
+        color TEXT NOT NULL DEFAULT '#6366f1',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        is_builtin INTEGER NOT NULL DEFAULT 0
+    );
+
+    INSERT INTO timing (key, name, color, sort_order, is_builtin) VALUES
+        ('today',     'Today',     '#22c55e', 0, 1),
+        ('tomorrow',  'Tomorrow',  '#f97316', 1, 1),
+        ('this_week', 'This Week', '#8b5cf6', 2, 1),
+        ('planned',   'Planned',   '#3b82f6', 3, 1),
+        ('someday',   'Someday',   '#a855f7', 4, 1),
+        ('event',     'Event',     '#14b8a6', 5, 1);
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。
