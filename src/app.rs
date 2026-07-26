@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-use crate::components::{PomodoroTimer, Settings, TasksView};
+use crate::components::{PomodoroTimer, Settings, Stats, TasksView};
 use crate::hooks::use_tags::use_tags;
 use crate::hooks::use_timer::use_timer;
 use crate::hooks::use_timings::use_timings;
@@ -14,6 +14,7 @@ static CSS: Asset = asset!("/assets/styles.css");
 pub enum Tab {
     Timer,
     Tasks,
+    Stats,
     Settings,
 }
 
@@ -54,6 +55,11 @@ pub fn App() -> Element {
                     "Tasks"
                 }
                 button {
+                    class: if active == Tab::Stats { "app__tab app__tab--active" } else { "app__tab" },
+                    onclick: move |_| tab.set(Tab::Stats),
+                    "Stats"
+                }
+                button {
                     class: if active == Tab::Settings { "app__gear app__gear--active" } else { "app__gear" },
                     aria_label: "Settings",
                     onclick: move |_| tab.set(Tab::Settings),
@@ -70,6 +76,10 @@ pub fn App() -> Element {
                 div {
                     class: if active == Tab::Tasks { "tab-panel" } else { "tab-panel tab-panel--hidden" },
                     TasksView {}
+                }
+                div {
+                    class: if active == Tab::Stats { "tab-panel" } else { "tab-panel tab-panel--hidden" },
+                    Stats {}
                 }
                 div {
                     class: if active == Tab::Settings { "tab-panel" } else { "tab-panel tab-panel--hidden" },

@@ -52,6 +52,7 @@ pub fn run() {
             commands::timing::timing_list,
             commands::timing::timing_create,
             commands::timing::timing_delete,
+            commands::stats::stats_focus_by_tag,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

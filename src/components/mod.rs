@@ -1,5 +1,6 @@
 mod pomodoro_timer;
 mod settings;
+mod stats;
 mod tag_bar;
 mod tasks_view;
 mod timer_status;
@@ -10,6 +11,7 @@ mod todo_list;
 
 pub use pomodoro_timer::PomodoroTimer;
 pub use settings::Settings;
+pub use stats::Stats;
 pub use tag_bar::TagBar;
 pub use tasks_view::TasksView;
 pub use timer_status::TimerStatus;

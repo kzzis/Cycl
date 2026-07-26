@@ -1,9 +1,14 @@
 // Phase 3のタイマーエンジンから呼ばれるまではTauriコマンドとして未公開・未使用
 #![allow(dead_code)]
 
+use crate::db::tag_queries;
 use crate::error::AppResult;
 use crate::models::session::PomodoroSession;
 use rusqlite::Connection;
+use shared::TagFocus;
+use std::collections::HashMap;
+
+const UNTAGGED_COLOR: &str = "#8b8b9a";
 
 pub fn create(conn: &Connection, todo_id: i64, started_at: &str) -> AppResult<PomodoroSession> {
     conn.execute(
@@ -52,6 +57,64 @@ pub fn record_completed(
     get(conn, conn.last_insert_rowid())
 }
 
+/// 作業チャンク(一時停止・切替・完了時の経過)を記録する。統計グラフの元データ。
+pub fn record_focus(
+    conn: &Connection,
+    todo_id: i64,
+    at: &str,
+    duration_secs: i64,
+    completed: bool,
+) -> AppResult<()> {
+    conn.execute(
+        "INSERT INTO pomodoro_session (todo_id, started_at, duration_secs, completed)
+         VALUES (?1, ?2, ?3, ?4)",
+        (todo_id, at, duration_secs, completed as i64),
+    )?;
+    Ok(())
+}
+
+/// `cutoff`(RFC3339)以降の作業時間をタグ別に集計する。
+/// 複数タグを持つタスクの時間は各タグへ均等按分し、タグ無しは "Untagged" に入れる。
+pub fn focus_by_tag(conn: &Connection, cutoff: &str) -> AppResult<Vec<TagFocus>> {
+    let mut stmt = conn.prepare(
+        "SELECT todo_id, duration_secs FROM pomodoro_session
+         WHERE started_at >= ?1 AND duration_secs > 0",
+    )?;
+    let rows = stmt
+        .query_map([cutoff], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))?
+        .collect::<Result<Vec<_>, _>>()?;
+
+    // 端数を丸めないよう f64 で集計し、最後に丸める。
+    let mut agg: HashMap<String, (String, f64)> = HashMap::new();
+    for (todo_id, dur) in rows {
+        let tags = tag_queries::tags_for_todo(conn, todo_id)?;
+        if tags.is_empty() {
+            agg.entry("Untagged".to_string())
+                .or_insert_with(|| (UNTAGGED_COLOR.to_string(), 0.0))
+                .1 += dur as f64;
+        } else {
+            let share = dur as f64 / tags.len() as f64;
+            for tag in tags {
+                agg.entry(tag.name.clone())
+                    .or_insert_with(|| (tag.color.clone(), 0.0))
+                    .1 += share;
+            }
+        }
+    }
+
+    let mut result: Vec<TagFocus> = agg
+        .into_iter()
+        .map(|(name, (color, secs))| TagFocus {
+            name,
+            color,
+            secs: secs.round() as i64,
+        })
+        .filter(|t| t.secs > 0)
+        .collect();
+    result.sort_by_key(|t| std::cmp::Reverse(t.secs));
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -95,5 +158,30 @@ mod tests {
         let todo = todo_queries::create(&conn, "作業", None).unwrap();
         let session = record_completed(&conn, todo.id, "2026-07-04T10:00:00+09:00").unwrap();
         assert!(session.completed);
+    }
+
+    #[test]
+    fn focus_by_tag_splits_multi_tag_time_and_buckets_untagged() {
+        use crate::db::tag_queries;
+        let conn = setup_conn();
+        let a = todo_queries::create(&conn, "A", None).unwrap();
+        let b = todo_queries::create(&conn, "B", None).unwrap();
+        let work = tag_queries::create(&conn, "work", "#ff0000").unwrap();
+        let home = tag_queries::create(&conn, "home", "#00ff00").unwrap();
+
+        // A は work と home の2タグ → 600秒を300ずつ按分。
+        tag_queries::add_to_todo(&conn, a.id, work.id).unwrap();
+        tag_queries::add_to_todo(&conn, a.id, home.id).unwrap();
+        record_focus(&conn, a.id, "2026-07-20T10:00:00+00:00", 600, true).unwrap();
+        // B はタグ無し → Untagged に 120秒。
+        record_focus(&conn, b.id, "2026-07-20T11:00:00+00:00", 120, false).unwrap();
+        // cutoff より前は集計されない。
+        record_focus(&conn, b.id, "2020-01-01T00:00:00+00:00", 999, false).unwrap();
+
+        let result = focus_by_tag(&conn, "2026-07-01T00:00:00+00:00").unwrap();
+        let get = |name: &str| result.iter().find(|t| t.name == name).map(|t| t.secs);
+        assert_eq!(get("work"), Some(300));
+        assert_eq!(get("home"), Some(300));
+        assert_eq!(get("Untagged"), Some(120));
     }
 }
