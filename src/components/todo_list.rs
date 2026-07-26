@@ -1,6 +1,7 @@
 use dioxus::prelude::*;
+use shared::DEFAULT_CATEGORY;
 
-use super::{TagBar, TodoForm, TodoItem};
+use super::{CategoryTabs, TagBar, TodoForm, TodoItem};
 use crate::hooks::use_tags::use_tags;
 use crate::hooks::use_todos::use_todos;
 
@@ -10,6 +11,7 @@ pub fn TodoList() -> Element {
     let tags = use_tags();
     let mut dragging_id = use_signal(|| None::<i64>);
     let mut filter_tag = use_signal(|| None::<i64>);
+    let mut filter_category = use_signal(|| None::<String>);
 
     if *todos.is_loading.read() {
         return rsx! { p { class: "muted", "Loading..." } };
@@ -53,8 +55,9 @@ pub fn TodoList() -> Element {
     };
 
     let filter = *filter_tag.read();
+    let category_filter = filter_category.read().clone();
     // フィルタが有効なときはドラッグ並び替えを無効化する(部分集合の並び替えは混乱を招くため)。
-    let reorder_enabled = filter.is_none();
+    let reorder_enabled = filter.is_none() && category_filter.is_none();
     let all_tags = tags.items.read().clone();
     let visible: Vec<_> = todos
         .items
@@ -64,11 +67,23 @@ pub fn TodoList() -> Element {
             Some(tag_id) => todo.tags.iter().any(|t| t.id == tag_id),
             None => true,
         })
+        .filter(|todo| match &category_filter {
+            Some(category) => &todo.category == category,
+            None => true,
+        })
         .cloned()
         .collect();
+    // 新規Todoは、カテゴリで絞り込み中ならそのカテゴリに、そうでなければ既定に作る。
+    let new_todo_category = category_filter
+        .clone()
+        .unwrap_or(DEFAULT_CATEGORY.to_string());
 
     rsx! {
         div { class: "todo-list",
+            CategoryTabs {
+                active: category_filter.clone(),
+                on_select: move |c| filter_category.set(c),
+            }
             TagBar {
                 tags: all_tags.clone(),
                 active_filter: filter,
@@ -78,7 +93,7 @@ pub fn TodoList() -> Element {
             }
             TodoForm {
                 on_submit: move |(title, target_count): (String, Option<i64>)| {
-                    todos.add(title, target_count);
+                    todos.add(title, target_count, new_todo_category.clone());
                 }
             }
             ul {
@@ -101,6 +116,7 @@ pub fn TodoList() -> Element {
                         on_hover: reorder_on_hover,
                         on_add_tag: move |(todo_id, tag_id)| todos.add_tag(todo_id, tag_id),
                         on_remove_tag: move |(todo_id, tag_id)| todos.remove_tag(todo_id, tag_id),
+                        on_change_category: move |(todo_id, category)| todos.update_category(todo_id, category),
                     }
                 }
             }
