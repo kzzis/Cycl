@@ -49,6 +49,9 @@ pub fn run() {
             commands::tag::todo_add_tag,
             commands::tag::todo_remove_tag,
             commands::tag::todo_list_by_tag,
+            commands::timing::timing_list,
+            commands::timing::timing_create,
+            commands::timing::timing_delete,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

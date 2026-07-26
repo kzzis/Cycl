@@ -26,6 +26,14 @@ impl UseTimer {
             let _ = api::reset_timer().await;
         });
     }
+
+    /// 現フェーズを最初に戻してから開始する。タスクの再生ボタンから新しく計測を始める用途。
+    pub fn start_fresh(&self) {
+        spawn(async {
+            let _ = api::reset_timer().await;
+            let _ = api::start_timer().await;
+        });
+    }
 }
 
 pub fn use_timer() -> UseTimer {

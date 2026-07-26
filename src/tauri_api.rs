@@ -73,6 +73,37 @@ pub mod timer {
     }
 }
 
+pub mod timing {
+    use super::{invoke, invoke0};
+    use serde::Serialize;
+    use shared::Timing;
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct CreateArgs<'a> {
+        name: &'a str,
+        color: &'a str,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct IdArgs {
+        id: i64,
+    }
+
+    pub async fn list_timings() -> Result<Vec<Timing>, String> {
+        invoke0("timing_list").await
+    }
+
+    pub async fn create_timing(name: &str, color: &str) -> Result<Timing, String> {
+        invoke("timing_create", &CreateArgs { name, color }).await
+    }
+
+    pub async fn delete_timing(id: i64) -> Result<(), String> {
+        invoke("timing_delete", &IdArgs { id }).await
+    }
+}
+
 pub mod tag {
     use super::invoke;
     use super::invoke0;

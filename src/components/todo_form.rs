@@ -1,33 +1,101 @@
 use dioxus::prelude::*;
+use wasm_bindgen::{closure::Closure, JsCast};
+
+const FORM_ID: &str = "todo-add-form";
+
+/// タイトルが入力されていれば送信し、フォームを初期状態に戻す。
+fn try_submit(
+    mut title: Signal<String>,
+    mut target_count: Signal<String>,
+    on_submit: EventHandler<(String, Option<i64>)>,
+) {
+    let trimmed = title.read().trim().to_string();
+    if trimmed.is_empty() {
+        return;
+    }
+    let parsed_target = if target_count.read().trim().is_empty() {
+        None
+    } else {
+        target_count.read().parse::<i64>().ok()
+    };
+    on_submit.call((trimmed, parsed_target));
+    title.set(String::new());
+    target_count.set("1".to_string());
+}
+
+/// フォーカスがフォームの外へ出たら閉じる。入力欄間の移動では閉じないよう、
+/// 次のイベントループで`activeElement`がフォーム内かを確認してから判定する。
+fn close_when_focus_left(mut is_open: Signal<bool>) {
+    let Some(window) = web_sys::window() else {
+        return;
+    };
+    let cb = Closure::once_into_js(move || {
+        let Some(doc) = web_sys::window().and_then(|w| w.document()) else {
+            return;
+        };
+        let still_inside = doc
+            .get_element_by_id(FORM_ID)
+            .map(|form| form.contains(doc.active_element().as_deref()))
+            .unwrap_or(false);
+        if !still_inside {
+            is_open.set(false);
+        }
+    });
+    let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(cb.unchecked_ref(), 0);
+}
 
 #[component]
 pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
     let mut title = use_signal(String::new);
-    let mut target_count = use_signal(String::new);
+    let mut target_count = use_signal(|| "1".to_string());
+    let mut is_open = use_signal(|| false);
 
-    let submit = move |event: FormEvent| {
-        event.prevent_default();
-        let trimmed = title.read().trim().to_string();
-        if trimmed.is_empty() {
-            return;
-        }
-        let parsed_target = if target_count.read().trim().is_empty() {
-            None
-        } else {
-            target_count.read().parse::<i64>().ok()
+    // 普段は「+」だけ表示。押すと入力欄を開く。
+    if !*is_open.read() {
+        return rsx! {
+            button {
+                class: "todo-form__toggle",
+                aria_label: "Add todo",
+                onclick: move |_| is_open.set(true),
+                span { class: "todo-form__toggle-icon", "+" }
+                "Add todo"
+            }
         };
-        on_submit.call((trimmed, parsed_target));
-        title.set(String::new());
-        target_count.set(String::new());
-    };
+    }
 
     rsx! {
-        form { class: "todo-form", onsubmit: submit,
+        form {
+            id: FORM_ID,
+            class: "todo-form",
+            onsubmit: move |e| {
+                e.prevent_default();
+                try_submit(title, target_count, on_submit);
+            },
+            // フォーカスがフォーム外へ出たら閉じる(状態は保持)。
+            onfocusout: move |_| close_when_focus_left(is_open),
             input {
                 value: "{title}",
                 placeholder: "New todo",
                 aria_label: "Todo title",
+                autofocus: true,
                 oninput: move |e| title.set(e.value()),
+                onkeydown: move |e| {
+                    if e.key() != Key::Enter {
+                        return;
+                    }
+                    // IME変換中(確定のEnter含む)は送信しない。
+                    // isComposing に加え、変換中に出る keyCode 229 も見る(WKWebViewでの取りこぼし対策)。
+                    let composing = e.is_composing()
+                        || e
+                            .downcast::<web_sys::KeyboardEvent>()
+                            .map(|k| k.key_code() == 229)
+                            .unwrap_or(false);
+                    if composing {
+                        return;
+                    }
+                    e.prevent_default();
+                    try_submit(title, target_count, on_submit);
+                },
             }
             input {
                 value: "{target_count}",
@@ -37,7 +105,14 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 aria_label: "Target pomodoro count",
                 oninput: move |e| target_count.set(e.value()),
             }
-            button { class: "btn btn--primary", r#type: "submit", "Add" }
+            button {
+                class: "todo-form__add",
+                r#type: "button",
+                aria_label: "Add todo",
+                disabled: title.read().trim().is_empty(),
+                onclick: move |_| try_submit(title, target_count, on_submit),
+                "+"
+            }
         }
     }
 }

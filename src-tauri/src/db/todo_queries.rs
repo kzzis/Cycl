@@ -4,7 +4,7 @@ use rusqlite::Connection;
 use shared::Todo;
 
 const SELECT_COLUMNS: &str =
-    "id, title, is_completed, pomodoro_count, target_count, is_active, created_at, category";
+    "id, title, is_completed, pomodoro_count, target_count, is_active, created_at, category, focus_secs";
 
 fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
     Ok(Todo {
@@ -17,7 +17,17 @@ fn todo_from_row(row: &rusqlite::Row) -> rusqlite::Result<Todo> {
         created_at: row.get("created_at")?,
         tags: Vec::new(),
         category: row.get("category")?,
+        focus_secs: row.get("focus_secs")?,
     })
+}
+
+/// 累積作業時間(秒)を加算する。タイマーエンジンから一時停止・切替・完了時に呼ばれる。
+pub fn add_focus_secs(conn: &Connection, id: i64, secs: i64) -> AppResult<()> {
+    conn.execute(
+        "UPDATE todo SET focus_secs = focus_secs + ?1 WHERE id = ?2",
+        (secs, id),
+    )?;
+    Ok(())
 }
 
 /// `todo_from_row`はタグを空で返すので、付与済みタグを読み込んで埋める。

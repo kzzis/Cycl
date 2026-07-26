@@ -1,11 +1,14 @@
 use dioxus::prelude::*;
-use shared::{Tag, Todo, CATEGORIES};
+use shared::{format_focus, Tag, Timing, Todo};
 
 #[component]
 pub fn TodoItem(
     todo: Todo,
     all_tags: Vec<Tag>,
+    all_timings: Vec<Timing>,
     is_dragging: bool,
+    /// このタスクが取り組み中かつタイマー動作中(再生/一時停止ボタンの切り替え用)。
+    is_running: bool,
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
     on_delete: EventHandler<i64>,
@@ -14,7 +17,9 @@ pub fn TodoItem(
     on_add_tag: EventHandler<(i64, i64)>,
     on_remove_tag: EventHandler<(i64, i64)>,
     on_change_category: EventHandler<(i64, String)>,
+    on_toggle_timer: EventHandler<i64>,
 ) -> Element {
+    let focus_label = format_focus(todo.focus_secs);
     let target_label = todo
         .target_count
         .map(|target| format!(" / {target}"))
@@ -63,13 +68,24 @@ pub fn TodoItem(
                     "{todo.title}"
                 }
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
+                span { class: "todo-item__focus", "{focus_label}" }
+                button {
+                    class: "todo-item__start",
+                    aria_label: if is_running { "Pause timer for {todo.title}" } else { "Start timer for {todo.title}" },
+                    onclick: move |_| on_toggle_timer.call(id),
+                    if is_running { "⏸" } else { "▶" }
+                }
                 select {
                     class: "todo-item__category",
-                    aria_label: "Category for {todo.title}",
+                    aria_label: "Timing for {todo.title}",
                     value: "{todo.category}",
                     onchange: move |e| on_change_category.call((id, e.value())),
-                    for (value, label) in CATEGORIES.iter().copied() {
-                        option { value: "{value}", selected: todo.category == value, "{label}" }
+                    for timing in all_timings.iter().cloned() {
+                        option {
+                            value: "{timing.key}",
+                            selected: todo.category == timing.key,
+                            "{timing.name}"
+                        }
                     }
                 }
                 button {

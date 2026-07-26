@@ -42,26 +42,170 @@ body {
 .app {
   height: 100vh;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   background: var(--surface);
+}
+
+.app__tabs {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem 0.75rem 0.5rem 5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.app__tab {
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 1rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app__tab:hover {
+  color: var(--foreground);
+}
+
+.app__tab--active {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+.app__gear {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.35rem 0.6rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.app__gear:hover {
+  color: var(--foreground);
+}
+
+.app__gear--active {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
+/* --- Settings --- */
+
+.settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  min-width: 0;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.settings__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.settings__form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.settings__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.85rem;
+}
+
+.settings__row-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.settings__badge {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  padding: 0.1rem 0.5rem;
+}
+
+.settings__delete {
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+}
+
+.settings__delete:hover {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger);
+}
+
+.app__content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.tab-panel {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.tab-panel--hidden {
+  display: none;
 }
 
 /* --- Pomodoro timer --- */
 
 .pomodoro {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
   padding: 2.5rem 2.25rem;
-  width: 20rem;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
 }
 
 .pomodoro__phase {
   margin: 0;
+  max-width: 15rem;
   padding: 0.3rem 0.9rem;
   border-radius: var(--radius-full);
   background: var(--surface-hover);
@@ -71,6 +215,9 @@ body {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pomodoro__ring {
@@ -212,6 +359,64 @@ body {
   width: 5.5rem;
 }
 
+.todo-form__add {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.todo-form__add:hover {
+  background: var(--primary-hover);
+}
+
+.todo-form__add:active {
+  transform: scale(0.95);
+}
+
+.todo-form__add:disabled {
+  background: var(--border-strong);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.todo-form__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.todo-form__toggle:hover {
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+
+.todo-form__toggle-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 .todo-item {
   display: flex;
   flex-direction: column;
@@ -308,6 +513,27 @@ body {
   font-size: 0.8rem;
   color: var(--muted-foreground);
   white-space: nowrap;
+}
+
+.todo-item__start {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.todo-item__start:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .todo-item__delete {
@@ -532,37 +758,112 @@ button.tag-filter.tag-filter--active {
   flex-shrink: 0;
 }
 
-/* --- Category tabs --- */
+/* --- Timing master list --- */
 
-.category-tabs {
+.timing-list {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
 }
 
-.category-tab {
-  background: transparent;
-  border: 1px solid var(--border-strong);
+.timing-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.timing-row:hover {
+  background: var(--surface-hover);
+}
+
+.timing-row__open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.timing-row__dot {
+  width: 0.85rem;
+  height: 0.85rem;
   border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.timing-row__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.timing-row__count {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.timing-row__delete {
+  background: none;
+  border: none;
   color: var(--muted-foreground);
   cursor: pointer;
   font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.3rem 0.9rem;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  padding: 0 0.9rem;
 }
 
-.category-tab:hover {
+.timing-row__delete:hover {
+  color: var(--danger);
+}
+
+.timing-create {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* --- Todo detail header --- */
+
+.todo-list__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.todo-list__back {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
   color: var(--foreground);
-  border-color: var(--foreground);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.3rem 0.6rem;
 }
 
-.category-tab--active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
+.todo-list__back:hover {
+  background: var(--surface-hover);
+}
+
+.todo-list__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .todo-item__category {
@@ -579,4 +880,55 @@ button.tag-filter.tag-filter--active {
 .todo-item__category:focus {
   outline: none;
   border-color: var(--primary);
+}
+
+/* --- Tasks view + live timer status --- */
+
+.tasks-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.timer-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.timer-status__phase {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--foreground);
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-status__time {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+}
+
+.todo-item__focus {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.timing-row__focus {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
 }
