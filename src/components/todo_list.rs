@@ -2,7 +2,9 @@ use dioxus::prelude::*;
 use shared::Timing;
 
 use super::{TagBar, TodoForm, TodoItem};
+use crate::app::Tab;
 use crate::hooks::use_tags::use_tags;
+use crate::hooks::use_timer::use_timer;
 use crate::hooks::use_timings::use_timings;
 use crate::hooks::use_todos::use_todos;
 
@@ -12,8 +14,17 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
     let todos = use_todos();
     let tags = use_tags();
     let timings = use_timings();
+    let timer = use_timer();
+    let mut tab = use_context::<Signal<Tab>>();
     let mut dragging_id = use_signal(|| None::<i64>);
     let mut filter_tag = use_signal(|| None::<i64>);
+
+    // 再生ボタン: そのタスクを取り組み中にし、タイマーを開始してTimerタブへ移る。
+    let start_task = move |id: i64| {
+        todos.select_active(id);
+        timer.start();
+        tab.set(Tab::Timer);
+    };
 
     if *todos.is_loading.read() {
         return rsx! { p { class: "muted", "Loading..." } };
@@ -124,6 +135,7 @@ pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
                         on_add_tag: move |(todo_id, tag_id)| todos.add_tag(todo_id, tag_id),
                         on_remove_tag: move |(todo_id, tag_id)| todos.remove_tag(todo_id, tag_id),
                         on_change_category: move |(todo_id, category)| todos.update_category(todo_id, category),
+                        on_start: start_task,
                     }
                 }
             }

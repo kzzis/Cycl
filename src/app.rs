@@ -7,13 +7,15 @@ use crate::components::{PomodoroTimer, TasksView};
 static CSS: Asset = asset!("/assets/styles.css");
 
 #[derive(Clone, Copy, PartialEq)]
-enum Tab {
+pub enum Tab {
     Timer,
     Tasks,
 }
 
 pub fn App() -> Element {
     let mut tab = use_signal(|| Tab::Timer);
+    // タブ状態をコンテキストで共有し、深い階層(タスク行の再生ボタン等)からも切り替えられるようにする。
+    use_context_provider(|| tab);
     let active = *tab.read();
 
     rsx! {

@@ -15,6 +15,7 @@ pub fn TodoItem(
     on_add_tag: EventHandler<(i64, i64)>,
     on_remove_tag: EventHandler<(i64, i64)>,
     on_change_category: EventHandler<(i64, String)>,
+    on_start: EventHandler<i64>,
 ) -> Element {
     let target_label = todo
         .target_count
@@ -64,6 +65,12 @@ pub fn TodoItem(
                     "{todo.title}"
                 }
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
+                button {
+                    class: "todo-item__start",
+                    aria_label: "Start timer for {todo.title}",
+                    onclick: move |_| on_start.call(id),
+                    "▶"
+                }
                 select {
                     class: "todo-item__category",
                     aria_label: "Timing for {todo.title}",

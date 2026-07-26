@@ -358,6 +358,27 @@ body {
   white-space: nowrap;
 }
 
+.todo-item__start {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.todo-item__start:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
 .todo-item__delete {
   border: none;
   background: transparent;
