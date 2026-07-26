@@ -92,6 +92,21 @@ pub fn format_mm_ss(total_seconds: u32) -> String {
     format!("{:02}:{:02}", total_seconds / 60, total_seconds % 60)
 }
 
+/// 累積作業時間(秒)を人間向けの`Xh Ym Zs`形式にする。秒まで表示する。
+pub fn format_focus(total_seconds: i64) -> String {
+    let secs = total_seconds.max(0);
+    let h = secs / 3600;
+    let m = (secs % 3600) / 60;
+    let s = secs % 60;
+    if h > 0 {
+        format!("{h}h {m}m {s}s")
+    } else if m > 0 {
+        format!("{m}m {s}s")
+    } else {
+        format!("{s}s")
+    }
+}
+
 /// フェーズの表示ラベル(フロント表示専用)。
 pub fn phase_label(phase: TimerPhase) -> &'static str {
     match phase {

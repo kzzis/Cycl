@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use shared::{Timing, Todo};
+use shared::{format_focus, Timing, Todo};
 
 #[component]
 pub fn TimingList(
@@ -28,7 +28,7 @@ pub fn TimingList(
                 {
                     let in_timing = todos.iter().filter(|t| t.category == timing.key);
                     let count = in_timing.clone().count();
-                    let focus_mins: i64 = in_timing.map(|t| t.focus_secs).sum::<i64>() / 60;
+                    let focus_label = format_focus(in_timing.map(|t| t.focus_secs).sum());
                     let selected = timing.clone();
                     rsx! {
                         div { class: "timing-row",
@@ -40,7 +40,7 @@ pub fn TimingList(
                                     style: "background-color: {timing.color}",
                                 }
                                 span { class: "timing-row__name", "{timing.name}" }
-                                span { class: "timing-row__focus", "{focus_mins}m" }
+                                span { class: "timing-row__focus", "{focus_label}" }
                                 span { class: "timing-row__count", "{count}" }
                             }
                             if !timing.is_builtin {

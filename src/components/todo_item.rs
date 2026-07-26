@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-use shared::{Tag, Timing, Todo};
+use shared::{format_focus, Tag, Timing, Todo};
 
 #[component]
 pub fn TodoItem(
@@ -17,7 +17,7 @@ pub fn TodoItem(
     on_change_category: EventHandler<(i64, String)>,
     on_start: EventHandler<i64>,
 ) -> Element {
-    let focus_mins = todo.focus_secs / 60;
+    let focus_label = format_focus(todo.focus_secs);
     let target_label = todo
         .target_count
         .map(|target| format!(" / {target}"))
@@ -66,7 +66,7 @@ pub fn TodoItem(
                     "{todo.title}"
                 }
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
-                span { class: "todo-item__focus", "{focus_mins}m" }
+                span { class: "todo-item__focus", "{focus_label}" }
                 button {
                     class: "todo-item__start",
                     aria_label: "Start timer for {todo.title}",
