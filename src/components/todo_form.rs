@@ -80,7 +80,8 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 autofocus: true,
                 oninput: move |e| title.set(e.value()),
                 onkeydown: move |e| {
-                    if e.key() == Key::Enter {
+                    // IME変換確定のEnterでは送信しない。
+                    if e.key() == Key::Enter && !e.is_composing() {
                         e.prevent_default();
                         try_submit(title, target_count, on_submit);
                     }
