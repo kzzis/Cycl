@@ -384,6 +384,53 @@ body {
   transform: scale(0.95);
 }
 
+.todo-form__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.todo-form__toggle:hover {
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+
+.todo-form__toggle-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.todo-form__cancel {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.todo-form__cancel:hover {
+  background: var(--surface-hover);
+  color: var(--foreground);
+}
+
 .todo-item {
   display: flex;
   flex-direction: column;

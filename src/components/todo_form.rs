@@ -4,6 +4,7 @@ use dioxus::prelude::*;
 pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
     let mut title = use_signal(String::new);
     let mut target_count = use_signal(String::new);
+    let mut is_open = use_signal(|| false);
 
     let submit = move |event: FormEvent| {
         event.prevent_default();
@@ -21,12 +22,26 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
         target_count.set(String::new());
     };
 
+    // 普段は「+」だけ表示。押すと入力欄を開く。
+    if !*is_open.read() {
+        return rsx! {
+            button {
+                class: "todo-form__toggle",
+                aria_label: "Add todo",
+                onclick: move |_| is_open.set(true),
+                span { class: "todo-form__toggle-icon", "+" }
+                "Add todo"
+            }
+        };
+    }
+
     rsx! {
         form { class: "todo-form", onsubmit: submit,
             input {
                 value: "{title}",
                 placeholder: "New todo",
                 aria_label: "Todo title",
+                autofocus: true,
                 oninput: move |e| title.set(e.value()),
             }
             input {
@@ -42,6 +57,17 @@ pub fn TodoForm(on_submit: EventHandler<(String, Option<i64>)>) -> Element {
                 r#type: "submit",
                 aria_label: "Add todo",
                 "+"
+            }
+            button {
+                class: "todo-form__cancel",
+                r#type: "button",
+                aria_label: "Cancel",
+                onclick: move |_| {
+                    title.set(String::new());
+                    target_count.set(String::new());
+                    is_open.set(false);
+                },
+                "✕"
             }
         }
     }
