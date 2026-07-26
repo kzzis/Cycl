@@ -566,37 +566,112 @@ button.tag-filter.tag-filter--active {
   flex-shrink: 0;
 }
 
-/* --- Category tabs --- */
+/* --- Timing master list --- */
 
-.category-tabs {
+.timing-list {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
 }
 
-.category-tab {
-  background: transparent;
-  border: 1px solid var(--border-strong);
+.timing-row {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.timing-row:hover {
+  background: var(--surface-hover);
+}
+
+.timing-row__open {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.85rem 1rem;
+  text-align: left;
+}
+
+.timing-row__dot {
+  width: 0.85rem;
+  height: 0.85rem;
   border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.timing-row__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.timing-row__count {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.timing-row__delete {
+  background: none;
+  border: none;
   color: var(--muted-foreground);
   cursor: pointer;
   font-size: 0.8rem;
-  font-weight: 600;
-  padding: 0.3rem 0.9rem;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  padding: 0 0.9rem;
 }
 
-.category-tab:hover {
+.timing-row__delete:hover {
+  color: var(--danger);
+}
+
+.timing-create {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* --- Todo detail header --- */
+
+.todo-list__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.todo-list__back {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
   color: var(--foreground);
-  border-color: var(--foreground);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.3rem 0.6rem;
 }
 
-.category-tab--active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--primary-foreground);
+.todo-list__back:hover {
+  background: var(--surface-hover);
+}
+
+.todo-list__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
 }
 
 .todo-item__category {

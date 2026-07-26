@@ -24,7 +24,7 @@ impl UseTodos {
         let this = *self;
         spawn(async move {
             if let Ok(todo) = api::create_todo(&title, target_count).await {
-                if category != shared::DEFAULT_CATEGORY {
+                if category != shared::DEFAULT_TIMING {
                     let _ = api::update_category(todo.id, &category).await;
                 }
                 this.refresh();

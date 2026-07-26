@@ -1,10 +1,11 @@
 use dioxus::prelude::*;
-use shared::{Tag, Todo, CATEGORIES};
+use shared::{Tag, Timing, Todo};
 
 #[component]
 pub fn TodoItem(
     todo: Todo,
     all_tags: Vec<Tag>,
+    all_timings: Vec<Timing>,
     is_dragging: bool,
     on_toggle_complete: EventHandler<i64>,
     on_select_active: EventHandler<i64>,
@@ -65,11 +66,15 @@ pub fn TodoItem(
                 span { class: "todo-item__count", "🍅×{todo.pomodoro_count}{target_label}" }
                 select {
                     class: "todo-item__category",
-                    aria_label: "Category for {todo.title}",
+                    aria_label: "Timing for {todo.title}",
                     value: "{todo.category}",
                     onchange: move |e| on_change_category.call((id, e.value())),
-                    for (value, label) in CATEGORIES.iter().copied() {
-                        option { value: "{value}", selected: todo.category == value, "{label}" }
+                    for timing in all_timings.iter().cloned() {
+                        option {
+                            value: "{timing.key}",
+                            selected: todo.category == timing.key,
+                            "{timing.name}"
+                        }
                     }
                 }
                 button {

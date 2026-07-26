@@ -2,7 +2,7 @@
 
 use dioxus::prelude::*;
 
-use crate::components::{PomodoroTimer, TodoList};
+use crate::components::{PomodoroTimer, TasksView};
 
 static CSS: Asset = asset!("/assets/styles.css");
 
@@ -41,7 +41,7 @@ pub fn App() -> Element {
             div { class: "app__content",
                 match active {
                     Tab::Timer => rsx! { PomodoroTimer {} },
-                    Tab::Tasks => rsx! { TodoList {} },
+                    Tab::Tasks => rsx! { TasksView {} },
                 }
             }
         }
