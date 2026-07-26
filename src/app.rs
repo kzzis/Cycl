@@ -3,6 +3,8 @@
 use dioxus::prelude::*;
 
 use crate::components::{PomodoroTimer, TasksView};
+use crate::hooks::use_timer::use_timer;
+use crate::hooks::use_todos::use_todos;
 
 static CSS: Asset = asset!("/assets/styles.css");
 
@@ -14,8 +16,13 @@ pub enum Tab {
 
 pub fn App() -> Element {
     let mut tab = use_signal(|| Tab::Timer);
-    // タブ状態をコンテキストで共有し、深い階層(タスク行の再生ボタン等)からも切り替えられるようにする。
+    let todos = use_todos();
+    let timer = use_timer();
+    // タブ状態・Todos・タイマーをコンテキストで共有し、全ビューが同じ状態を見るようにする。
+    // (取り組み中タスクの変更などがビュー間で即座に反映される)
     use_context_provider(|| tab);
+    use_context_provider(|| todos);
+    use_context_provider(|| timer);
     let active = *tab.read();
 
     rsx! {

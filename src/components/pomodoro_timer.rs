@@ -1,15 +1,15 @@
 use dioxus::prelude::*;
 use shared::{format_mm_ss, phase_label, TimerPhase};
 
-use crate::hooks::use_timer::use_timer;
-use crate::hooks::use_todos::use_todos;
+use crate::hooks::use_timer::UseTimer;
+use crate::hooks::use_todos::UseTodos;
 
 const RADIUS: f64 = 90.0;
 
 #[component]
 pub fn PomodoroTimer() -> Element {
-    let timer = use_timer();
-    let todos = use_todos();
+    let timer = use_context::<UseTimer>();
+    let todos = use_context::<UseTodos>();
     let Some(state) = timer.state.read().clone() else {
         return rsx! { p { class: "muted", "Loading..." } };
     };

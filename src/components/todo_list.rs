@@ -4,25 +4,25 @@ use shared::Timing;
 use super::{TagBar, TodoForm, TodoItem};
 use crate::app::Tab;
 use crate::hooks::use_tags::use_tags;
-use crate::hooks::use_timer::use_timer;
+use crate::hooks::use_timer::UseTimer;
 use crate::hooks::use_timings::use_timings;
-use crate::hooks::use_todos::use_todos;
+use crate::hooks::use_todos::UseTodos;
 
 /// 単一タイミングのTodo詳細ビュー。マスター(タイミング一覧)から遷移してくる。
 #[component]
 pub fn TodoList(timing: Timing, on_back: EventHandler<()>) -> Element {
-    let todos = use_todos();
+    let todos = use_context::<UseTodos>();
     let tags = use_tags();
     let timings = use_timings();
-    let timer = use_timer();
+    let timer = use_context::<UseTimer>();
     let mut tab = use_context::<Signal<Tab>>();
     let mut dragging_id = use_signal(|| None::<i64>);
     let mut filter_tag = use_signal(|| None::<i64>);
 
-    // 再生ボタン: そのタスクを取り組み中にし、タイマーを開始してTimerタブへ移る。
+    // 再生ボタン: そのタスクを取り組み中にし、タイマーを新しく開始してTimerタブへ移る。
     let start_task = move |id: i64| {
         todos.select_active(id);
-        timer.start();
+        timer.start_fresh();
         tab.set(Tab::Timer);
     };
 

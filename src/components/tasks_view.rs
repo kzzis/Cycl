@@ -3,13 +3,13 @@ use shared::Timing;
 
 use super::{TimingList, TodoList};
 use crate::hooks::use_timings::use_timings;
-use crate::hooks::use_todos::use_todos;
+use crate::hooks::use_todos::UseTodos;
 
 /// Tasksタブ本体。タイミング一覧(マスター)と、選択したタイミングのTodo詳細を切り替える。
 #[component]
 pub fn TasksView() -> Element {
     let timings = use_timings();
-    let todos = use_todos();
+    let todos = use_context::<UseTodos>();
     let mut selected = use_signal(|| None::<Timing>);
 
     let current = selected.read().clone();
