@@ -1,13 +1,15 @@
 use dioxus::prelude::*;
-use shared::{format_mm_ss, phase_label};
+use shared::{format_mm_ss, phase_label, TimerPhase};
 
 use crate::hooks::use_timer::use_timer;
+use crate::hooks::use_todos::use_todos;
 
 const RADIUS: f64 = 90.0;
 
 #[component]
 pub fn PomodoroTimer() -> Element {
     let timer = use_timer();
+    let todos = use_todos();
     let Some(state) = timer.state.read().clone() else {
         return rsx! { p { class: "muted", "Loading..." } };
     };
@@ -21,9 +23,21 @@ pub fn PomodoroTimer() -> Element {
     };
     let offset = circumference * (1.0 - progress);
 
+    // 作業フェーズ中は取り組み中タスク名を、それ以外はフェーズ名を表示する。
+    let active_title = todos
+        .items
+        .read()
+        .iter()
+        .find(|t| t.is_active)
+        .map(|t| t.title.clone());
+    let phase_text = match (state.phase, active_title) {
+        (TimerPhase::Work, Some(title)) => title,
+        (phase, _) => phase_label(phase).to_string(),
+    };
+
     rsx! {
         div { class: "pomodoro",
-            p { class: "pomodoro__phase", "{phase_label(state.phase)}" }
+            p { class: "pomodoro__phase", "{phase_text}" }
             div { class: "pomodoro__ring",
                 svg {
                     width: "220", height: "220", view_box: "0 0 220 220",

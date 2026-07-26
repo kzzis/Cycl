@@ -106,6 +106,7 @@ body {
 
 .pomodoro__phase {
   margin: 0;
+  max-width: 15rem;
   padding: 0.3rem 0.9rem;
   border-radius: var(--radius-full);
   background: var(--surface-hover);
@@ -115,6 +116,9 @@ body {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pomodoro__ring {

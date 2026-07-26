@@ -1,7 +1,7 @@
 use crate::db::{todo_queries, AppState};
 use crate::error::AppResult;
 use shared::Todo;
-use tauri::State;
+use tauri::{AppHandle, Emitter, State};
 
 #[tauri::command]
 pub fn todo_list(state: State<AppState>) -> AppResult<Vec<Todo>> {
@@ -43,9 +43,14 @@ pub fn todo_toggle_complete(state: State<AppState>, id: i64) -> AppResult<Todo> 
 }
 
 #[tauri::command]
-pub fn todo_set_active(state: State<AppState>, id: Option<i64>) -> AppResult<()> {
-    let conn = state.db.lock().unwrap();
-    todo_queries::set_active(&conn, id)
+pub fn todo_set_active(app: AppHandle, state: State<AppState>, id: Option<i64>) -> AppResult<()> {
+    {
+        let conn = state.db.lock().unwrap();
+        todo_queries::set_active(&conn, id)?;
+    }
+    // タイマー画面など他のビューが取り組み中タスクの変更に追従できるよう通知する。
+    let _ = app.emit("todos:changed", ());
+    Ok(())
 }
 
 #[tauri::command]
