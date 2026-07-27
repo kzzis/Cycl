@@ -87,6 +87,23 @@ const MIGRATIONS: &[(&str, &str)] = &[
     ALTER TABLE pomodoro_session ADD COLUMN duration_secs INTEGER NOT NULL DEFAULT 0;
     "#,
     ),
+    (
+        "0008_analytics",
+        r#"
+    -- 1ポモドーロ内で発生した中断(一時停止・タスク切替)の回数。
+    ALTER TABLE pomodoro_session ADD COLUMN interruption_count INTEGER NOT NULL DEFAULT 0;
+
+    -- 見積もり(target_count)と実績(pomodoro_count)の乖離をタスク完了時に記録する。
+    CREATE TABLE estimation_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        todo_id INTEGER NOT NULL REFERENCES todo(id) ON DELETE CASCADE,
+        estimated_count INTEGER NOT NULL,
+        actual_count INTEGER NOT NULL,
+        accuracy_score REAL NOT NULL,
+        recorded_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+    );
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。

@@ -3,6 +3,7 @@
 mod app;
 mod components;
 mod hooks;
+mod month;
 mod tauri_api;
 
 use app::App;

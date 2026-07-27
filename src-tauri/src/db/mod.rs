@@ -2,6 +2,7 @@ use rusqlite::Connection;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+pub mod analytics_queries;
 pub mod migrations;
 pub mod session_queries;
 pub mod tag_queries;

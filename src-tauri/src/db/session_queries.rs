@@ -58,17 +58,20 @@ pub fn record_completed(
 }
 
 /// 作業チャンク(一時停止・切替・完了時の経過)を記録する。統計グラフの元データ。
+/// `interruptions`はフェーズを完走した行にだけ入る(途中経過の行は0)。
 pub fn record_focus(
     conn: &Connection,
     todo_id: i64,
     at: &str,
     duration_secs: i64,
     completed: bool,
+    interruptions: i64,
 ) -> AppResult<()> {
     conn.execute(
-        "INSERT INTO pomodoro_session (todo_id, started_at, duration_secs, completed)
-         VALUES (?1, ?2, ?3, ?4)",
-        (todo_id, at, duration_secs, completed as i64),
+        "INSERT INTO pomodoro_session
+            (todo_id, started_at, duration_secs, completed, interruption_count)
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+        (todo_id, at, duration_secs, completed as i64, interruptions),
     )?;
     Ok(())
 }
@@ -172,11 +175,11 @@ mod tests {
         // A は work と home の2タグ → 600秒を300ずつ按分。
         tag_queries::add_to_todo(&conn, a.id, work.id).unwrap();
         tag_queries::add_to_todo(&conn, a.id, home.id).unwrap();
-        record_focus(&conn, a.id, "2026-07-20T10:00:00+00:00", 600, true).unwrap();
+        record_focus(&conn, a.id, "2026-07-20T10:00:00+00:00", 600, true, 0).unwrap();
         // B はタグ無し → Untagged に 120秒。
-        record_focus(&conn, b.id, "2026-07-20T11:00:00+00:00", 120, false).unwrap();
+        record_focus(&conn, b.id, "2026-07-20T11:00:00+00:00", 120, false, 0).unwrap();
         // cutoff より前は集計されない。
-        record_focus(&conn, b.id, "2020-01-01T00:00:00+00:00", 999, false).unwrap();
+        record_focus(&conn, b.id, "2020-01-01T00:00:00+00:00", 999, false, 0).unwrap();
 
         let result = focus_by_tag(&conn, "2026-07-01T00:00:00+00:00").unwrap();
         let get = |name: &str| result.iter().find(|t| t.name == name).map(|t| t.secs);
