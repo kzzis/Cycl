@@ -17,6 +17,9 @@ struct PendingFocus {
 pub struct TimerEngine {
     state: Arc<Mutex<TimerState>>,
     pending: Arc<Mutex<PendingFocus>>,
+    /// 現在の作業フェーズ中に発生した中断(一時停止・タスク切替)の回数。
+    /// フェーズ完走時にセッションへ書き出してリセットする。
+    phase_interruptions: Arc<Mutex<i64>>,
     db: Arc<Mutex<Connection>>,
     app_handle: AppHandle,
 }
@@ -25,15 +28,18 @@ impl TimerEngine {
     pub fn new(app_handle: AppHandle, db: Arc<Mutex<Connection>>) -> Self {
         let state = Arc::new(Mutex::new(TimerState::new(TimerSettings::default())));
         let pending = Arc::new(Mutex::new(PendingFocus::default()));
+        let phase_interruptions = Arc::new(Mutex::new(0));
         spawn_tick_loop(
             app_handle.clone(),
             state.clone(),
             db.clone(),
             pending.clone(),
+            phase_interruptions.clone(),
         );
         TimerEngine {
             state,
             pending,
+            phase_interruptions,
             db,
             app_handle,
         }
@@ -51,33 +57,48 @@ impl TimerEngine {
 
     pub fn pause(&self) -> TimerState {
         let mut state = self.state.lock().unwrap();
+        // 作業中の一時停止は中断1回として数える。
+        if state.is_running && state.phase == TimerPhase::Work {
+            *self.phase_interruptions.lock().unwrap() += 1;
+        }
         state.is_running = false;
         drop(state);
         // 途中経過を記録してから停止状態を返す。
-        flush_focus(&self.pending, &self.db, &self.app_handle, false);
+        flush_focus(&self.pending, &self.db, &self.app_handle, false, 0);
         self.state.lock().unwrap().clone()
     }
 
     pub fn reset(&self) -> TimerState {
-        flush_focus(&self.pending, &self.db, &self.app_handle, false);
+        flush_focus(&self.pending, &self.db, &self.app_handle, false, 0);
         let mut state = self.state.lock().unwrap();
         state.reset_current_phase();
+        // フェーズをやり直すので中断カウントも破棄する。
+        *self.phase_interruptions.lock().unwrap() = 0;
         state.clone()
     }
 
     /// 取り組み中タスクの切り替え前などに、溜まっている作業経過をDBへ書き出す。
     pub fn flush_focus(&self) {
-        flush_focus(&self.pending, &self.db, &self.app_handle, false);
+        // 作業中のタスク切り替えも中断1回として数える。
+        {
+            let state = self.state.lock().unwrap();
+            if state.is_running && state.phase == TimerPhase::Work {
+                *self.phase_interruptions.lock().unwrap() += 1;
+            }
+        }
+        flush_focus(&self.pending, &self.db, &self.app_handle, false, 0);
     }
 }
 
 /// 溜まっている作業経過を、作業チャンク(セッション)としてDBに記録し、
-/// タスクの累積作業時間へ加算する。`completed`は1ポモドーロ完走かどうか。
+/// タスクの累積作業時間へ加算する。`completed`は1ポモドーロ完走かどうかで、
+/// `interruptions`は完走した行にだけ記録する中断回数。
 fn flush_focus(
     pending: &Arc<Mutex<PendingFocus>>,
     db: &Arc<Mutex<Connection>>,
     app: &AppHandle,
     completed: bool,
+    interruptions: i64,
 ) {
     let mut p = pending.lock().unwrap();
     if p.secs > 0 {
@@ -85,7 +106,14 @@ fn flush_focus(
             {
                 let conn = db.lock().unwrap();
                 let now = Utc::now().to_rfc3339();
-                let _ = session_queries::record_focus(&conn, id, &now, p.secs, completed);
+                let _ = session_queries::record_focus(
+                    &conn,
+                    id,
+                    &now,
+                    p.secs,
+                    completed,
+                    interruptions,
+                );
                 let _ = todo_queries::add_focus_secs(&conn, id, p.secs);
             }
             let _ = app.emit("todos:changed", ());
@@ -100,6 +128,7 @@ fn spawn_tick_loop(
     state: Arc<Mutex<TimerState>>,
     db: Arc<Mutex<Connection>>,
     pending: Arc<Mutex<PendingFocus>>,
+    phase_interruptions: Arc<Mutex<i64>>,
 ) {
     tauri::async_runtime::spawn(async move {
         let mut ticker = interval(Duration::from_secs(1));
@@ -137,8 +166,9 @@ fn spawn_tick_loop(
             }
 
             if just_completed_work {
-                // 完走分をチャンク記録しつつ、ポモドーロ数の更新と通知を行う。
-                flush_focus(&pending, &db, &app_handle, true);
+                // 完走分は、このフェーズ中の中断回数と一緒にチャンク記録する。
+                let interruptions = std::mem::take(&mut *phase_interruptions.lock().unwrap());
+                flush_focus(&pending, &db, &app_handle, true, interruptions);
                 notify_completion(&app_handle, &db);
             }
 

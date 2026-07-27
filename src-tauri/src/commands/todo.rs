@@ -1,4 +1,4 @@
-use crate::db::{todo_queries, AppState};
+use crate::db::{analytics_queries, todo_queries, AppState};
 use crate::error::AppResult;
 use crate::timer::engine::TimerEngine;
 use shared::Todo;
@@ -40,7 +40,12 @@ pub fn todo_delete(state: State<AppState>, id: i64) -> AppResult<()> {
 #[tauri::command]
 pub fn todo_toggle_complete(state: State<AppState>, id: i64) -> AppResult<Todo> {
     let conn = state.db.lock().unwrap();
-    todo_queries::toggle_complete(&conn, id)
+    let todo = todo_queries::toggle_complete(&conn, id)?;
+    // 完了になった瞬間に、見積もりと実績の乖離を記録する(分析用)。
+    if todo.is_completed {
+        analytics_queries::record_estimation(&conn, id)?;
+    }
+    Ok(todo)
 }
 
 #[tauri::command]
