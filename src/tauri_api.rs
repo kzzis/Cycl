@@ -76,7 +76,7 @@ pub mod timer {
 pub mod stats {
     use super::invoke;
     use serde::Serialize;
-    use shared::TagFocus;
+    use shared::{AccuracyEntry, HourFocus, MonthlyStats, TagFocus, TagSummary};
 
     #[derive(Serialize)]
     #[serde(rename_all = "camelCase")]
@@ -84,8 +84,36 @@ pub mod stats {
         period: &'a str,
     }
 
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct MonthArgs<'a> {
+        year_month: &'a str,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct TodoIdArgs {
+        todo_id: Option<i64>,
+    }
+
     pub async fn focus_by_tag(period: &str) -> Result<Vec<TagFocus>, String> {
         invoke("stats_focus_by_tag", &PeriodArgs { period }).await
+    }
+
+    pub async fn monthly(year_month: &str) -> Result<MonthlyStats, String> {
+        invoke("stats_monthly", &MonthArgs { year_month }).await
+    }
+
+    pub async fn accuracy(todo_id: Option<i64>) -> Result<Vec<AccuracyEntry>, String> {
+        invoke("stats_accuracy", &TodoIdArgs { todo_id }).await
+    }
+
+    pub async fn focus_hours(year_month: &str) -> Result<Vec<HourFocus>, String> {
+        invoke("stats_focus_hours", &MonthArgs { year_month }).await
+    }
+
+    pub async fn tag_summary(year_month: &str) -> Result<Vec<TagSummary>, String> {
+        invoke("stats_tag_summary", &MonthArgs { year_month }).await
     }
 }
 
