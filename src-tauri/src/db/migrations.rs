@@ -104,6 +104,16 @@ const MIGRATIONS: &[(&str, &str)] = &[
     );
     "#,
     ),
+    (
+        "0009_app_setting",
+        r#"
+    -- アプリ設定の汎用key-value(MCPサーバーのON/OFFなど)。
+    CREATE TABLE app_setting (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
+    "#,
+    ),
 ];
 
 /// SQLiteの `PRAGMA user_version` を使って、未適用のマイグレーションだけを順番に当てる。
