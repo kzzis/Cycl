@@ -1,3 +1,4 @@
+mod mcp_settings;
 mod pomodoro_timer;
 mod settings;
 mod stats;
@@ -13,6 +14,7 @@ mod todo_form;
 mod todo_item;
 mod todo_list;
 
+pub use mcp_settings::McpSettings;
 pub use pomodoro_timer::PomodoroTimer;
 pub use settings::Settings;
 pub use stats::Stats;
