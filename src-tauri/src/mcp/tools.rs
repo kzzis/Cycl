@@ -241,3 +241,69 @@ fn dispatch(app: &AppHandle, name: &str, args: &Value) -> Result<Value, String> 
 /// 新規タスクの既定タイミング(ツール説明に載せる値と揃える)。
 #[allow(dead_code)]
 pub const DEFAULT_CATEGORY: &str = DEFAULT_TIMING;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 仕様で決めた9ツールが、MCPが要求する形で載っていること。
+    #[test]
+    fn definitions_expose_every_tool_with_a_schema() {
+        let defs = definitions();
+        let tools = defs.as_array().expect("definitions must be an array");
+        assert_eq!(tools.len(), 9);
+
+        let names: Vec<&str> = tools
+            .iter()
+            .map(|t| t["name"].as_str().expect("name must be a string"))
+            .collect();
+        for expected in [
+            "todo_list",
+            "todo_create",
+            "todo_delete",
+            "todo_set_active",
+            "timer_start",
+            "timer_pause",
+            "timer_reset",
+            "stats_monthly",
+            "stats_accuracy",
+        ] {
+            assert!(names.contains(&expected), "{expected} is missing");
+        }
+
+        for tool in tools {
+            assert!(
+                !tool["description"].as_str().unwrap_or("").is_empty(),
+                "{} has no description",
+                tool["name"]
+            );
+            assert_eq!(
+                tool["inputSchema"]["type"], "object",
+                "{} has a non-object schema",
+                tool["name"]
+            );
+        }
+    }
+
+    #[test]
+    fn required_arguments_are_declared() {
+        let defs = definitions();
+        let tools = defs.as_array().unwrap();
+        let required = |name: &str| -> Vec<String> {
+            tools
+                .iter()
+                .find(|t| t["name"] == name)
+                .and_then(|t| t["inputSchema"]["required"].as_array())
+                .map(|a| {
+                    a.iter()
+                        .filter_map(|v| v.as_str().map(String::from))
+                        .collect()
+                })
+                .unwrap_or_default()
+        };
+        assert_eq!(required("todo_create"), ["title"]);
+        assert_eq!(required("todo_delete"), ["id"]);
+        // 引数なしのツールは必須項目を持たない。
+        assert!(required("timer_start").is_empty());
+    }
+}
