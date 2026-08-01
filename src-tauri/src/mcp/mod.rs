@@ -187,7 +187,14 @@ async fn handle(
     };
 
     let response = match request.method.as_str() {
-        "initialize" => Response::ok(id, initialize_result()),
+        "initialize" => {
+            // 相手が話せる版に合わせる。合わせられなければこちらの最新を名乗る。
+            let requested = request
+                .params
+                .get("protocolVersion")
+                .and_then(|v| v.as_str());
+            Response::ok(id, initialize_result(requested))
+        }
         "ping" => Response::ok(id, json!({})),
         "tools/list" => Response::ok(id, json!({ "tools": tools::definitions() })),
         "tools/call" => {
