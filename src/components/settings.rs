@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
 
+use super::McpSettings;
 use crate::hooks::use_tags::UseTags;
 use crate::hooks::use_timings::UseTimings;
 
@@ -143,6 +144,7 @@ pub fn Settings() -> Element {
                     }
                 }
             }
+            McpSettings {}
         }
     }
 }

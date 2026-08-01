@@ -73,6 +73,34 @@ pub mod timer {
     }
 }
 
+pub mod mcp {
+    use super::{invoke, invoke0};
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Debug, Clone, PartialEq, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct McpStatus {
+        pub enabled: bool,
+        pub port: u16,
+        pub token: String,
+        pub error: Option<String>,
+    }
+
+    #[derive(Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct EnabledArgs {
+        enabled: bool,
+    }
+
+    pub async fn status() -> Result<McpStatus, String> {
+        invoke0("mcp_status").await
+    }
+
+    pub async fn set_enabled(enabled: bool) -> Result<McpStatus, String> {
+        invoke("mcp_set_enabled", &EnabledArgs { enabled }).await
+    }
+}
+
 pub mod stats {
     use super::invoke;
     use serde::Serialize;

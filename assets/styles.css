@@ -1514,3 +1514,39 @@ button.tag-filter.tag-filter--active {
   gap: 0.4rem;
   font-variant-numeric: normal;
 }
+
+/* --- MCP server settings --- */
+
+.settings__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.settings__error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
+.mcp-config {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.mcp-config__code {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  /* 長いトークンでウィンドウを横に伸ばさない。 */
+  overflow-x: auto;
+  white-space: pre;
+  user-select: text;
+}

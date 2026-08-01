@@ -3,11 +3,13 @@
 mod commands;
 mod db;
 mod error;
+mod mcp;
 mod models;
 mod timer;
 mod tray;
 
 use db::AppState;
+use mcp::McpServer;
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
 use timer::engine::TimerEngine;
@@ -26,7 +28,23 @@ pub fn run() {
 
             app.manage(AppState { db: db.clone() });
             app.manage(TimerEngine::new(app.handle().clone(), db.clone()));
+            app.manage(McpServer::new());
             tray::setup(app.handle())?;
+
+            // 前回有効にしていた場合だけMCPサーバーを開き直す(既定は無効)。
+            let was_enabled = {
+                let conn = db.lock().unwrap();
+                db::setting_queries::get_bool(&conn, mcp::SETTING_KEY, false).unwrap_or(false)
+            };
+            if was_enabled {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    let server = handle.state::<McpServer>();
+                    if let Err(e) = server.start(handle.clone()).await {
+                        eprintln!("failed to start the MCP server: {e}");
+                    }
+                });
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -57,6 +75,8 @@ pub fn run() {
             commands::stats::stats_accuracy,
             commands::stats::stats_focus_hours,
             commands::stats::stats_tag_summary,
+            commands::mcp::mcp_status,
+            commands::mcp::mcp_set_enabled,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
