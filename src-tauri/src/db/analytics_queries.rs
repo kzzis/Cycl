@@ -282,6 +282,16 @@ mod tests {
         "2026-07".to_string()
     }
 
+    /// `record_estimation`は`recorded_at`に実時刻を入れるので、月で絞る
+    /// テストではセッションと同じ月へ寄せておく(実行月に結果が左右されないように)。
+    fn pin_estimations_to_test_month(conn: &Connection) {
+        conn.execute(
+            "UPDATE estimation_log SET recorded_at = ?1",
+            [local_ts(10, 9)],
+        )
+        .unwrap();
+    }
+
     #[test]
     fn record_estimation_skips_todos_without_a_target() {
         let conn = setup_conn();
@@ -361,6 +371,7 @@ mod tests {
         todo_queries::increment_pomodoro_count(&conn, todo.id).unwrap();
         todo_queries::increment_pomodoro_count(&conn, todo.id).unwrap();
         record_estimation(&conn, todo.id).unwrap();
+        pin_estimations_to_test_month(&conn);
 
         let summary = tag_summary(&conn, &month()).unwrap();
         let get = |name: &str| summary.iter().find(|t| t.name == name).cloned().unwrap();
